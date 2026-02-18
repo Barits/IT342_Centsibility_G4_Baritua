@@ -1,0 +1,35 @@
+package com.centsibility.backend.repository;
+
+import com.centsibility.backend.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+/**
+ * UserRepository - Data access layer for User entity
+ * 
+ * TODO: 
+ * - Implement custom query methods as needed
+ * - Add methods for finding users by various criteria
+ */
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    
+    /**
+     * Find user by email
+     * @param email user email
+     * @return Optional containing user if found
+     */
+    Optional<User> findByEmail(String email);
+    
+    /**
+     * Check if email already exists
+     * @param email email to check
+     * @return true if exists
+     */
+    Boolean existsByEmail(String email);
+    
+    // TODO: Add more custom query methods as needed
+    // Example: List<User> findByEnabledTrue();
+}
