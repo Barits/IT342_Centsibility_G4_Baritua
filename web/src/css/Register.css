@@ -1,0 +1,125 @@
+/* Register Page Styles */
+
+.register-container {
+  margin-top: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.register-paper {
+  padding: 32px;
+  width: 100%;
+  background-color: #F9FAFB;
+  border-radius: 24px;
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.register-title {
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.register-subtitle {
+  color: #6B7280;
+}
+
+.register-alert {
+  margin-bottom: 16px;
+}
+
+.register-icon {
+  color: #6B7280;
+}
+
+/* Hide browser's default password reveal button */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-contacts-auto-fill-button {
+  display: none !important;
+}
+
+.register-password-strength-container {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.register-password-strength-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.register-password-progress {
+  flex-grow: 1;
+  height: 6px;
+  border-radius: 8px;
+  background-color: #E5E7EB;
+}
+
+.register-password-strength-label {
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.register-password-requirements {
+  color: #6B7280;
+  font-size: 0.75rem;
+}
+
+.register-password-match-container {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.register-password-match-icon {
+  font-size: 20px;
+}
+
+.register-password-match-success {
+  color: #10B981;
+}
+
+.register-password-match-error {
+  color: #EF4444;
+}
+
+.register-submit-button {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+.register-submit-button:hover {
+  box-shadow: none;
+}
+
+.register-signin-container {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.register-signin-text {
+  color: #6B7280;
+}
+
+.register-signin-link {
+  text-decoration: none;
+}
+
+.register-signin-link-text {
+  color: #2563EB;
+  font-weight: 500;
+}

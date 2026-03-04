@@ -1,0 +1,87 @@
+/* Dashboard Page Styles */
+
+.dashboard-root {
+  min-height: 100vh;
+  background-color: #FFFFFF;
+}
+
+.dashboard-appbar {
+  background-color: #F9FAFB;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.dashboard-title {
+  flex-grow: 1;
+  color: #111827;
+  font-weight: 500;
+}
+
+.dashboard-logout-button {
+  color: #2563EB;
+  font-weight: 500;
+}
+
+.dashboard-logout-button:hover {
+  background-color: rgba(37, 99, 235, 0.08);
+}
+
+.dashboard-content {
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+.dashboard-welcome-title {
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.dashboard-welcome-subtitle {
+  color: #6B7280;
+  margin-bottom: 32px;
+}
+
+.dashboard-user-info-card {
+  padding: 24px;
+  background-color: #F9FAFB;
+  border-radius: 24px;
+  margin-bottom: 24px;
+}
+
+.dashboard-section-title {
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.dashboard-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-info-label {
+  font-weight: 500;
+  color: #111827;
+}
+
+.dashboard-info-value {
+  color: #6B7280;
+}
+
+.dashboard-placeholder-card {
+  padding: 24px;
+  background-color: #F9FAFB;
+  border-radius: 24px;
+}
+
+.dashboard-placeholder-text {
+  color: #6B7280;
+  text-align: center;
+}

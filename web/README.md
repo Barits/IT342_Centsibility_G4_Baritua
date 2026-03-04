@@ -1,70 +1,161 @@
-# Getting Started with Create React App
+# Centsibility Web Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Frontend web application for the Centsibility Financial Management Platform built with React.
+
+## Technologies Used
+
+- **React 18.2**
+- **Material-UI (MUI) 5.14**
+- **React Router DOM 6.20**
+- **Axios** (HTTP client)
+- **Formik** (Form management)
+- **Yup** (Form validation)
+
+## Project Structure
+
+```
+web/
+├── public/
+│   └── index.html
+├── src/
+│   ├── components/           # Reusable components
+│   │   └── PrivateRoute.jsx
+│   ├── pages/                # Page components
+│   │   ├── Login.jsx
+│   │   ├── Register.jsx
+│   │   └── Dashboard.jsx
+│   ├── services/             # API services
+│   │   ├── api.js
+│   │   └── authService.js
+│   ├── App.jsx               # Main app component
+│   ├── index.js              # Entry point
+│   └── index.css             # Global styles
+├── .env                      # Environment variables
+└── package.json
+```
+
+## Setup Instructions
+
+### Prerequisites
+
+- Node.js 16 or higher
+- npm or yarn
+
+### Installation
+
+1. Navigate to the web directory:
+```bash
+cd web
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Configure environment variables:
+Create a `.env` file in the web directory with:
+```
+REACT_APP_API_BASE_URL=http://localhost:8080/api
+```
+
+4. Start the development server:
+```bash
+npm start
+```
+
+The application will open at `http://localhost:3000`
+
+## Features Implemented (Phase 1)
+
+### User Registration Page
+- ✅ First name, last name, email, and password fields
+- ✅ Password confirmation field
+- ✅ Show/hide password toggle
+- ✅ Client-side validation with real-time feedback
+- ✅ Password strength requirements:
+  - Minimum 8 characters
+  - At least one uppercase letter
+  - At least one lowercase letter
+  - At least one digit
+  - At least one special character (@#$%^&+=!)
+- ✅ Duplicate email error handling
+- ✅ Success message and automatic redirect to login
+- ✅ Loading state during submission
+
+### User Login Page
+- ✅ Email and password fields
+- ✅ Show/hide password toggle
+- ✅ Client-side validation
+- ✅ Error handling for invalid credentials
+- ✅ JWT token storage
+- ✅ Automatic redirect to dashboard on success
+- ✅ Loading state during submission
+
+### Dashboard
+- ✅ Protected route (requires authentication)
+- ✅ Display user information
+- ✅ Logout functionality
+- ✅ Navigation bar
+
+### Security & Authentication
+- ✅ JWT token-based authentication
+- ✅ Automatic token inclusion in API requests
+- ✅ Automatic redirect to login on 401 errors
+- ✅ Protected routes with authentication check
+- ✅ Local storage for user data and token
 
 ## Available Scripts
 
-In the project directory, you can run:
-
 ### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Runs the app in development mode at [http://localhost:3000](http://localhost:3000)
 
 ### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Launches the test runner in interactive watch mode
 
 ### `npm run build`
+Builds the app for production to the `build` folder
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Form Validation Rules
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Registration Form
+- **First Name:** Required, 2-50 characters
+- **Last Name:** Required, 2-50 characters
+- **Email:** Required, valid email format
+- **Password:** Required, minimum 8 characters with complexity requirements
+- **Confirm Password:** Required, must match password
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Login Form
+- **Email:** Required, valid email format
+- **Password:** Required
 
-### `npm run eject`
+## API Integration
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+The frontend communicates with the backend API through the following endpoints:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- **Register:** `POST /api/auth/register`
+- **Login:** `POST /api/auth/login`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+All API calls are made through the centralized `api.js` service with automatic token injection and error handling.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Styling
 
-## Learn More
+- Material-UI components for consistent design
+- Responsive layout with MUI Grid and Container
+- Custom theme configuration
+- Clean and modern UI
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Browser Support
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
 
-### Code Splitting
+## Future Enhancements
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Email verification
+- Password reset functionality
+- Remember me option
+- Multi-factor authentication
+- Social login integration

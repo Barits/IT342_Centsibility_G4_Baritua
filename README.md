@@ -1,186 +1,245 @@
-# Centsibility
+# Centsibility - Financial Management Platform
 
-Centsibility is a mobile-first financial management platform designed to simplify personal accounting for students and young professionals. It provides users with real-time visibility into their spending habits through intuitive transaction logging and financial dashboards.
-
-## ⚠️ IT342 Course Requirements
-
-**ALL features in this project are MANDATORY per IT342 final requirements.** This includes:
-- ✅ Authentication & Security
-- ✅ Role-Based Access Control  
-- ✅ Core Business Module (Transaction CRUD)
-- ✅ Google OAuth Login (REQUIRED)
-- ✅ File Upload (REQUIRED)
-- ✅ Email Sending via SMTP (REQUIRED)
-- ✅ External API Integration (REQUIRED)
-- ✅ Payment Gateway (if applicable)
-
-📋 **See [IT342_REQUIREMENTS_SUMMARY.md](documents/IT342_REQUIREMENTS_SUMMARY.md) for complete requirements breakdown and implementation roadmap.**
-
-## Project Overview
-
-Many individuals face financial anxiety due to a lack of visibility into their spending habits. Traditional methods like spreadsheets or physical receipts are time-consuming and error-prone. Centsibility bridges the gap between complex banking apps and manual trackers, offering a structured environment where users can instantly log income and expenses, categorize transactions, and view their financial health at a glance.
-
-> 📊 **Development Status**: For current development progress, implementation status, and weekly updates, see [PROJECT_STATUS.md](documents/PROJECT_STATUS.md)
-
-## Technology Stack
-
-- **Backend**: Spring Boot, Spring Security, JWT, BCrypt
-- **Database**: MySQL with Hibernate ORM
-- **Frontend**: React (Web), React Native (Mobile)
-- **Integration**: External REST APIs, Google OAuth 2.0, Payment Gateway (Sandbox), SMTP Email
-- **Architecture**: Layered Architecture (Controller-Service-Repository)
+Centsibility is a comprehensive financial management platform built with Spring Boot, React, and MySQL. It simplifies personal accounting for students and young professionals by providing real-time visibility into spending habits through intuitive transaction logging and financial dashboards.
 
 ## Features
 
-### Authentication & Security
-- User registration and login with password hashing (BCrypt)
-- JWT-based authentication for secure API access
-- Logout functionality and protected routes
-- `/me` endpoint to retrieve current authenticated user
+- Secure user authentication and authorization with JWT
+- Role-based access control
+- Password encryption with BCrypt
+- Real-time form validation
+- Protected routes and personalized dashboard
+- Responsive Material-UI interface
 
-### Role-Based Access Control
-- Two user roles: Admin and Regular User
-- API-level restrictions based on user roles
-- UI-level access control for different features
-- Admins can manage system data; regular users have limited access
+## Project Structure
 
-### Core Business Module: Transaction Management
-- Full CRUD operations for income and expense records
-- Transaction categorization (Food, Rent, Salary, etc.)
-- Proper validation for all input data
-- Automatic timestamping for accurate record-keeping
+```
+IT342_Centsibility_G4_Baritua/
+├── backend/          # Spring Boot REST API
+├── web/              # React web application
+├── mobile/           # Mobile application (Future)
+├── documents/        # Project documentation
+└── README.md         # This file
+```
 
-### System Integrations (ALL REQUIRED FOR IT342)
-- **External API** (REQUIRED): Consumes real public API for financial data enrichment
-- **Google OAuth Login** (REQUIRED): Social login with automatic user registration and JWT generation
-- **File Upload** (REQUIRED): Upload and store receipts (images/PDFs) linked to transactions
-- **Payment Gateway** (if applicable): Sandbox integration with real payment provider; records success/failure
-- **Email Notifications** (REQUIRED): Account verification emails and system notifications via SMTP (no console print)
+## Technology Stack
 
-### Database Design (IT342 Requirement: Minimum 5 Tables)
-- Six normalized tables with proper relationships (users, roles, user_roles, transactions, files, email_logs)
-- One-to-Many and Many-to-One relationships
-- Secure password storage with BCrypt hashing (no plain-text)
-- DTO pattern to prevent sensitive data exposure in API responses
+### Backend
+- **Framework**: Spring Boot 3.2.0
+- **Language**: Java 17
+- **Security**: Spring Security with JWT
+- **Database**: MySQL 8.0
+- **ORM**: Spring Data JPA / Hibernate
+- **Build Tool**: Maven
+- **Validation**: Jakarta Bean Validation
 
-### Architecture
-- Clear layered architecture (Controller, Service, Repository)
-- Global exception handling for consistent error responses
-- RESTful endpoint naming conventions
-- Proper HTTP status codes for all responses
+### Frontend
+- **Framework**: React 18.2
+- **UI Library**: Material-UI 5.14
+- **Routing**: React Router DOM 6.20
+- **HTTP Client**: Axios
+- **Form Management**: Formik
+- **Form Validation**: Yup
 
 ## Getting Started
 
 ### Prerequisites
 - Java 17 or higher
-- MySQL 8.0
-- Node.js and npm (for web/mobile clients)
-- SMTP server credentials for email functionality
+- Node.js 16 or higher
+- MySQL 8.0 or higher
+- Maven 3.6 or higher
 
-### Installation
+### Backend Setup
 
-1. Clone the repository
-```bash
-git clone https://github.com/yourusername/IT342_Centsibility_Baritua.git
-cd IT342_Centsibility_Baritua
-```
-
-2. Configure the database
-```bash
-# Create MySQL database
-CREATE DATABASE centsibility;
-```
-
-3. Set up environment variables
-```bash
-# Copy the example environment file
-cp backend/.env.example backend/.env
-
-# Update the following variables:
-# - Database credentials
-# - Google OAuth credentials
-# - Payment gateway keys
-# - SMTP configuration
-```
-
-4. Run the backend application
+1. Navigate to backend directory:
 ```bash
 cd backend
-./mvnw spring-boot:run
 ```
 
-5. Run the web client
+2. Configure database in `src/main/resources/application.properties`:
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/centsibility
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+```
+
+3. Create database and run schema:
+```bash
+mysql -u your_username -p < src/main/resources/schema.sql
+```
+
+4. Start the backend:
+```bash
+mvn spring-boot:run
+```
+
+Backend will run on `http://localhost:8080`
+
+### Frontend Setup
+
+1. Navigate to web directory:
 ```bash
 cd web
+```
+
+2. Install dependencies:
+```bash
 npm install
+```
+
+3. Configure environment variables in `.env`:
+```
+REACT_APP_API_BASE_URL=http://localhost:8080/api
+```
+
+4. Start the frontend:
+```bash
 npm start
 ```
 
-## API Documentation
-The API follows RESTful conventions with proper HTTP status codes:
+Frontend will run on `http://localhost:3000`
 
-| Method | Endpoint | Description | Access |
-|--------|----------|-------------|--------|
-| POST | /api/auth/register | User registration | Public |
-| POST | /api/auth/login | User login | Public |
-| GET | /api/users/me | Get current user | Authenticated |
-| GET | /api/transactions | List transactions | Authenticated |
-| POST | /api/transactions | Create transaction | Authenticated |
-| PUT | /api/transactions/{id} | Update transaction | Authenticated |
-| DELETE | /api/transactions/{id} | Delete transaction | Authenticated |
-| GET | /api/admin/users | List all users | Admin only |
+## API Endpoints
 
-## Project Structure
+### Authentication
 
-**Note:** IT342 requires folders named `backend/`, `web/`, `mobile/`, and `docs/`. We currently have `documents/` instead of `docs/` - consider renaming if needed.
+#### POST /api/auth/register
+Register a new user account
 
+**Request Body:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "password": "SecurePass123!"
+}
 ```
-IT342_Centsibility_G4_Baritua/
-├── backend/           # Spring Boot application
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/centsibility/
-│   │   │   │   ├── controller/    # REST controllers
-│   │   │   │   ├── service/       # Business logic
-│   │   │   │   ├── repository/    # Data access
-│   │   │   │   ├── dto/           # Data transfer objects
-│   │   │   │   ├── model/         # Entity classes (6 tables)
-│   │   │   │   ├── config/        # Security configuration
-│   │   │   │   └── exception/     # Global exception handling
-│   │   │   └── resources/         # Application properties
-│   │   └── test/                  # Unit and integration tests
-├── web/               # React web application
-├── mobile/            # React Native mobile application
-├── documents/         # Documentation and diagrams (should be "docs/"?)
-│   ├── IT342_REQUIREMENTS_SUMMARY.md  # ⭐ START HERE
-│   ├── SYSTEM_DESIGN_DOCUMENT.md      # Complete system spec
-│   ├── PROJECT_STATUS.md              # Current progress
-│   ├── SETUP_GUIDE.md                 # Installation guide
-│   └── PACKAGE_STRUCTURE.md           # Architecture details
-└── README.md
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "role": "USER"
+  },
+  "message": "User registered successfully",
+  "timestamp": "2026-03-04T10:30:00"
+}
 ```
 
-## Architecture
-The application implements a layered architecture pattern:
+#### POST /api/auth/login
+Authenticate user and receive JWT token
+
+**Request Body:**
+```json
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePass123!"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "role": "USER"
+  },
+  "message": "Login successful",
+  "token": "eyJhbGciOiJIUzUxMiJ9...",
+  "timestamp": "2026-03-04T10:35:00"
+}
+```
+
+## Database Schema (Phase 1)
+
+
+The database consists of three main tables:
+- **users**: User account information
+- **roles**: User roles (USER, ADMIN)
+- **user_roles**: Junction table for many-to-many relationship
+
+Security features include BCrypt password hashing (12 salt rounds), email uniqueness constraints, and automatic timestamping.
+
+## Architectureayered architecture:
 
 - **Controller Layer**: Handles HTTP requests, input validation, and response formatting
 - **Service Layer**: Contains business logic and transaction management
 - **Repository Layer**: Manages database operations through Spring Data JPA
 - **DTO Layer**: Transfers data between layers without exposing internal entities
-- **Security Layer**: Configures JWT authentication and role-based access control
+- **Security Layer**: JWT authentication and role-based access control
 
-The architecture ensures separation of concerns, maintainability, and testability.
+This*Password Hashing**: BCrypt with 12 salt rounds
+- **Authentication**: JWT tokens (24-hour expiration)
+- **Input Validation**: Client-side and server-side
+- **SQL Injection Protection**: JPA/Hibernate parameterized queries
+- **XSS Protection**: React default behavior
+- **CORS**: Configured for development (needs production adjustment)
 
-## Documentation
-Comprehensive documentation is available in the `/documents` directory:
+## Build for Production
 
-- **[System Design Document (SDD)](documents/SYSTEM_DESIGN_DOCUMENT.md)** - Complete system specification, requirements, API contracts, database design, and project timeline
-- **[Project Status](documents/PROJECT_STATUS.md)** - Current development progress and phase tracking
-- **[Setup Guide](documents/SETUP_GUIDE.md)** - Installation instructions and troubleshooting
-- **[Package Structure](documents/PACKAGE_STRUCTURE.md)** - Backend architecture and code organization
-- Architecture diagrams (planned)
-- API specifications (in SDD)
-- Database schema (in SDD)
+### Backend
+```bash
+cd backend
+mvn clean package
+# JAR file created in target/ directory
+```
+
+### Frontend
+```bash
+cd web
+npm run build
+# Optimized build created in build/ directory
+```
 
 ## Contributors
-Baritua - Project Lead & Developer
+
+**Group 4 - Baritua**  
+IT342 Project - March 2026
+
+## License
+
+This project is developed for educational purposes as part of IT342 course.
+
+## Support
+
+For  architecture ensures separation of concerns, maintainability, and testability.
+
+## Security
+
+- *questions or issues, please contact the development team or create an issue in the repository.
+
+---
+
+**Last Updated:** March 4, 2026  
+**Version:** 1.0.0 (Phase 1 Complete)  
+**Status:** ✅ User Registration and Login Implemented## Documentation
+
+Comprehensive documentation is available in the `/documents` directory:
+
+- **[Backend README](backend/README.md)** - Backend setup and API documentation
+- **[Frontend README](web/README.md)** - Frontend setup and component documentation
+- **[Database Schema](backend/src/main/resources/schema.sql)** - Complete database structure
+
+## License
+
+This project is developed for educational purposes as part of IT342 course.Documentation
+
+Comprehensive documentation is available in the `/documents` directory:
+
+- **[Backend README](backend/README.md)** - Backend setup and API documentation
+- **[Frontend README](web/README.md)** - Frontend setup and component documentation
+- **[Database Schema](backend/src/main/resources/schema.sql)** - Complete database structure
+
+## Contributors
+
+**Section G4 - Baritua**  
+IT342 Project
