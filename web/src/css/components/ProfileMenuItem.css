@@ -1,0 +1,45 @@
+.profile-menu-item {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #F3F4F6;
+  margin-bottom: 12px;
+}
+
+.profile-menu-item:hover {
+  background-color: #F9FAFB;
+  transform: translateX(4px);
+}
+
+.profile-menu-item-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-menu-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: #F3F4F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6B7280;
+}
+
+.profile-menu-label {
+  color: #111827;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.profile-menu-chevron {
+  color: #9CA3AF;
+  font-size: 20px;
+}
