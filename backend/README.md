@@ -1,15 +1,16 @@
 # Centsibility Backend
 
-Backend API for the Centsibility Financial Management Platform built with Spring Boot.
+REST API for the Centsibility Financial Management Platform.
 
-## Technologies Used
+## Technology Stack
 
-- **Java 17**
-- **Spring Boot 3.2.0**
-- **Spring Security** (JWT Authentication)
-- **Spring Data JPA**
-- **PostgreSQL / Supabase** (Database)
-- **Maven** (Build tool)
+- Java 17
+- Spring Boot 3.2.0
+- Spring Security with JWT Authentication
+- Spring Data JPA
+- PostgreSQL / Supabase
+- Maven
+- Google OAuth 2.0
 
 ## Project Structure
 
@@ -61,175 +62,135 @@ backend/
 
 ### Environment Configuration
 
-1. Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
+1. Copy `.env.example` to `.env` and configure the following variables:
 
-2. Update the `.env` file with your database credentials:
 ```properties
-# For Supabase (recommended)
-DB_URL=jdbc:postgresql://your-project.pooler.supabase.com:5432/postgres
-DB_USERNAME=postgres.yourprojectid
-DB_PASSWORD=your_secure_password
-
-# Or for local PostgreSQL
-DB_URL=jdbc:postgresql://localhost:5432/centsibility
+DB_URL=jdbc:postgresql://your-host:5432/database
 DB_USERNAME=postgres
-DB_PASSWORD=your_local_password
-
-# JWT Secret (change in production!)
-JWT_SECRET=your_very_long_and_secure_secret_key_here
+DB_PASSWORD=your_password
+JWT_SECRET=your_secure_secret_key_minimum_64_characters
+JWT_EXPIRATION=86400000
+GOOGLE_CLIENT_ID=your_google_client_id
 ```
 
-3. **For Supabase Users:**
-   - Get credentials from: Project Settings → Database
-   - Use the **Session Pooler** connection string for better IPv4 compatibility
-   - Run the schema from `schema-postgres.sql` in the Supabase SQL Editor
-
-4. **For Local PostgreSQL Users:**
-   - Create database: `CREATE DATABASE centsibility;`
-   - Run the schema: `psql -U postgres -d centsibility -f src/main/resources/schema-postgres.sql`
-
-### Setting Environment Variables
-
-#### Option 1: Using .env file (Recommended for development)
-The `.env` file in the backend directory will be automatically loaded if you use an IDE plugin or tool like:
-- IntelliJ IDEA: EnvFile plugin
-- VS Code: DotENV extension
-- Or use `export $(cat .env | xargs)` before running (Linux/Mac)
-
-#### Option 2: System Environment Variables
-Set environment variables in your system or IDE run configuration:
-```bash
-export DB_URL=jdbc:postgresql://...
-export DB_USERNAME=postgres
-export DB_PASSWORD=your_password
-```
-
-#### Option 3: IntelliJ Run Configuration
-1. Run → Edit Configurations
-2. Add environment variables in the "Environment variables" field
+2. For Supabase: Use the Session Pooler connection string from Project Settings → Database
+3. For Local PostgreSQL: Create database `centsibility` and run `schema-postgres.sql`
 
 ### Running the Application
 
-1. Install dependencies:
 ```bash
 mvn clean install
-```
-
-2. Run the application:
-```bash
 mvn spring-boot:run
 ```
 
-The application will start on `http://localhost:8080`
+Application runs on `http://localhost:8080`
 
 ## API Endpoints
 
 ### Authentication
 
-#### Register User
-- **URL:** `POST /api/auth/register`
-- **Request Body:**
+**POST** `/api/auth/register`
 ```json
+Request:
 {
   "firstName": "John",
   "lastName": "Doe",
   "email": "john.doe@example.com",
   "password": "SecurePass123!"
 }
-```
-- **Response (201 Created):**
-```json
+
+Response (201):
 {
   "success": true,
-  "data": {
-    "id": 1,
-    "firstName": "John",
-    "lastName": "Doe",
-    "email": "john.doe@example.com",
-    "role": "USER"
-  },
+  "data": { "id": 1, "firstName": "John", "lastName": "Doe", "email": "john.doe@example.com", "role": "USER" },
   "message": "User registered successfully",
-  "timestamp": "2026-03-04T10:30:00"
+  "token": "eyJhbGciOiJIUzUxMiJ9...",
+  "timestamp": "2026-03-11T10:30:00"
 }
 ```
 
-#### Login
-- **URL:** `POST /api/auth/login`
-- **Request Body:**
+**POST** `/api/auth/login`
 ```json
+Request:
 {
   "email": "john.doe@example.com",
   "password": "SecurePass123!"
 }
-```
-- **Response (200 OK):**
-```json
+
+Response (200):
 {
   "success": true,
-  "data": {
-    "id": 1,
-    "firstName": "John",
-    "lastName": "Doe",
-    "email": "john.doe@example.com",
-    "role": "USER"
-  },
+  "data": { "id": 1, "firstName": "John", "lastName": "Doe", "email": "john.doe@example.com", "role": "USER" },
   "message": "Login successful",
   "token": "eyJhbGciOiJIUzUxMiJ9...",
-  "timestamp": "2026-03-04T10:35:00"
+  "timestamp": "2026-03-11T10:35:00"
+}
+```
+
+**POST** `/api/auth/google/login`
+```json
+Request:
+{ "token": "google_id_token_here" }
+
+Response (200):
+{
+  "success": true,
+  "data": { "id": 1, "firstName": "John", "lastName": "Doe", "email": "john.doe@gmail.com", "role": "USER" },
+  "message": "Login successful via Google",
+  "token": "eyJhbGciOiJIUzUxMiJ9...",
+  "timestamp": "2026-03-11T10:35:00"
+}
+```
+
+**POST** `/api/auth/google/register`
+```json
+Request:
+{ "token": "google_id_token_here" }
+
+Response (201):
+{
+  "success": true,
+  "data": { "id": 2, "firstName": "Jane", "lastName": "Smith", "email": "jane.smith@gmail.com", "role": "USER" },
+  "message": "User registered successfully via Google",
+  "token": "eyJhbGciOiJIUzUxMiJ9...",
+  "timestamp": "2026-03-11T10:40:00"
 }
 ```
 
 ## Security
 
-- **Password Hashing:** BCrypt with 12 salt rounds
-- **Authentication:** JWT (JSON Web Tokens)
-- **Token Expiration:** 24 hours (configurable via `JWT_EXPIRATION`)
-- **CORS:** Enabled for all origins (configure for production)
-- **Environment Variables:** Sensitive credentials stored in `.env` (never committed to git)
+- Password Hashing: BCrypt with 12 rounds
+- Authentication: JWT tokens with 24-hour expiration
+- Google OAuth 2.0 integration with ID token verification
+- CORS enabled (configure for production)
+- Sensitive credentials stored in environment variables
 
-### Security Best Practices
+## Features
 
-1. **Never commit `.env` file** - It contains sensitive credentials
-2. **Change default JWT_SECRET** - Generate a secure random string (64+ characters)
-3. **Use strong database passwords** - Follow your database provider's recommendations
-4. **Enable HTTPS in production** - Configure SSL/TLS certificates
-5. **Restrict CORS origins** - Update SecurityConfig for production environment
-
-## Features Implemented (Phase 1)
-
-✅ User Registration
-- First name, last name, email, and password
-- Email format validation
-- Password strength validation (min 8 chars, uppercase, lowercase, digit, special char)
+**User Management**
+- User registration with email and password
+- User login with JWT token generation
+- Google OAuth registration and login
+- Email format and password strength validation
 - Duplicate email prevention
-- BCrypt password hashing
 
-✅ User Login
-- Email and password authentication
-- JWT token generation
-- Spring Security integration
-- Session management (stateless)
-
-✅ Error Handling
-- Global exception handler
-- Validation errors
-- Authentication errors
-- Custom error responses
+**Security**
+- JWT-based authentication
+- BCrypt password encryption
+- Google ID token verification
+- Global exception handling
+- Validation error responses
 
 ## Testing
 
-Run tests:
 ```bash
 mvn test
 ```
 
-## Build for Production
+## Build
 
 ```bash
 mvn clean package
 ```
 
-The JAR file will be created in the `target/` directory.
+JAR file output: `target/centsibility-backend-1.0.0.jar`

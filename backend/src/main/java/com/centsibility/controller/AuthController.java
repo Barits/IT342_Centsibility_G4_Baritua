@@ -2,6 +2,7 @@ package com.centsibility.controller;
 
 import com.centsibility.dto.request.LoginRequest;
 import com.centsibility.dto.request.RegisterRequest;
+import com.centsibility.dto.request.GoogleTokenRequest;
 import com.centsibility.dto.response.AuthResponse;
 import com.centsibility.service.UserService;
 import jakarta.validation.Valid;
@@ -30,5 +31,17 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = userService.authenticateUser(request);
         return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/google/login")
+    public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleTokenRequest request) {
+        AuthResponse response = userService.authenticateGoogleUser(request.getToken());
+        return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/google/register")
+    public ResponseEntity<AuthResponse> googleRegister(@Valid @RequestBody GoogleTokenRequest request) {
+        AuthResponse response = userService.registerGoogleUser(request.getToken());
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }
