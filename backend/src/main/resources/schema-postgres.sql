@@ -49,6 +49,26 @@ CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON user_roles(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_roles_role_id ON user_roles(role_id);
 
 -- ======================================
+-- Table: transactions
+-- Description: Stores user financial transaction entries
+-- ======================================
+CREATE TABLE IF NOT EXISTS transactions (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    amount NUMERIC(14, 2) NOT NULL,
+    transaction_date DATE NOT NULL,
+    notes VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_transactions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(transaction_date);
+
+-- ======================================
 -- Function: Update timestamp on row update
 -- ======================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -80,5 +100,6 @@ ON CONFLICT (name) DO NOTHING;
 COMMENT ON TABLE roles IS 'Stores user roles for role-based access control';
 COMMENT ON TABLE users IS 'Stores user account information';
 COMMENT ON TABLE user_roles IS 'Junction table for many-to-many relationship between users and roles';
+COMMENT ON TABLE transactions IS 'Stores financial transactions for each user';
 COMMENT ON COLUMN users.password IS 'BCrypt hashed password';
 COMMENT ON COLUMN users.enabled IS 'Account enabled status';

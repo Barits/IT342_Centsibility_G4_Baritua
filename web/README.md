@@ -1,15 +1,15 @@
 # Centsibility Web Application
 
-Frontend web application for the Centsibility Financial Management Platform built with React.
+Frontend web application for the Centsibility Financial Management Platform.
 
-## Technologies Used
+## Technologies
 
-- **React 18.2**
-- **Material-UI (MUI) 5.14**
-- **React Router DOM 6.20**
-- **Axios** (HTTP client)
-- **Formik** (Form management)
-- **Yup** (Form validation)
+- React 18.2
+- Material-UI (MUI) 5.14
+- React Router DOM 6.20
+- Axios
+- Formik
+- Yup
 
 ## Project Structure
 
@@ -18,23 +18,27 @@ web/
 ├── public/
 │   └── index.html
 ├── src/
-│   ├── components/           # Reusable components
+│   ├── components/
 │   │   └── PrivateRoute.jsx
-│   ├── pages/                # Page components
+│   ├── pages/
 │   │   ├── Login.jsx
 │   │   ├── Register.jsx
 │   │   └── Dashboard.jsx
-│   ├── services/             # API services
+│   ├── services/
 │   │   ├── api.js
 │   │   └── authService.js
-│   ├── App.jsx               # Main app component
-│   ├── index.js              # Entry point
-│   └── index.css             # Global styles
-├── .env                      # Environment variables
+│   ├── css/
+│   │   ├── Dashboard.css
+│   │   ├── Login.css
+│   │   └── Register.css
+│   ├── App.jsx
+│   ├── index.js
+│   └── index.css
+├── .env
 └── package.json
 ```
 
-## Setup Instructions
+## Setup
 
 ### Prerequisites
 
@@ -53,8 +57,7 @@ cd web
 npm install
 ```
 
-3. Configure environment variables:
-Create a `.env` file in the web directory with:
+3. Create a `.env` file with the following configuration:
 ```
 REACT_APP_API_BASE_URL=http://localhost:8080/api
 ```
@@ -64,98 +67,48 @@ REACT_APP_API_BASE_URL=http://localhost:8080/api
 npm start
 ```
 
-The application will open at `http://localhost:3000`
+The application will run at `http://localhost:3000`
 
-## Features Implemented (Phase 1)
+## Features
 
-### User Registration Page
-- ✅ First name, last name, email, and password fields
-- ✅ Password confirmation field
-- ✅ Show/hide password toggle
-- ✅ Client-side validation with real-time feedback
-- ✅ Password strength requirements:
-  - Minimum 8 characters
-  - At least one uppercase letter
-  - At least one lowercase letter
-  - At least one digit
-  - At least one special character (@#$%^&+=!)
-- ✅ Duplicate email error handling
-- ✅ Success message and automatic redirect to login
-- ✅ Loading state during submission
+### Authentication
+- User registration with validation
+- User login with JWT authentication
+- Protected routes
+- Automatic token management
+- Session persistence
 
-### User Login Page
-- ✅ Email and password fields
-- ✅ Show/hide password toggle
-- ✅ Client-side validation
-- ✅ Error handling for invalid credentials
-- ✅ JWT token storage
-- ✅ Automatic redirect to dashboard on success
-- ✅ Loading state during submission
+### User Registration
+- Form fields: first name, last name, email, password, confirm password
+- Password visibility toggle
+- Real-time validation
+- Password requirements: minimum 8 characters, uppercase, lowercase, digit, special character
+- Duplicate email handling
+
+### User Login
+- Email and password authentication
+- Form validation
+- Error handling
 
 ### Dashboard
-- ✅ Protected route (requires authentication)
-- ✅ Display user information
-- ✅ Logout functionality
-- ✅ Navigation bar
-
-### Security & Authentication
-- ✅ JWT token-based authentication
-- ✅ Automatic token inclusion in API requests
-- ✅ Automatic redirect to login on 401 errors
-- ✅ Protected routes with authentication check
-- ✅ Local storage for user data and token
+- User profile display
+- Logout functionality
+- Navigation
 
 ## Available Scripts
 
 ### `npm start`
-Runs the app in development mode at [http://localhost:3000](http://localhost:3000)
+Runs the application in development mode at http://localhost:3000
 
 ### `npm test`
 Launches the test runner in interactive watch mode
 
 ### `npm run build`
-Builds the app for production to the `build` folder
+Builds the application for production to the `build` folder
 
-## Form Validation Rules
+## API Endpoints
 
-### Registration Form
-- **First Name:** Required, 2-50 characters
-- **Last Name:** Required, 2-50 characters
-- **Email:** Required, valid email format
-- **Password:** Required, minimum 8 characters with complexity requirements
-- **Confirm Password:** Required, must match password
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User authentication
 
-### Login Form
-- **Email:** Required, valid email format
-- **Password:** Required
-
-## API Integration
-
-The frontend communicates with the backend API through the following endpoints:
-
-- **Register:** `POST /api/auth/register`
-- **Login:** `POST /api/auth/login`
-
-All API calls are made through the centralized `api.js` service with automatic token injection and error handling.
-
-## Styling
-
-- Material-UI components for consistent design
-- Responsive layout with MUI Grid and Container
-- Custom theme configuration
-- Clean and modern UI
-
-## Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-
-## Future Enhancements
-
-- Email verification
-- Password reset functionality
-- Remember me option
-- Multi-factor authentication
-- Social login integration
+All API requests include automatic JWT token injection and centralized error handling.

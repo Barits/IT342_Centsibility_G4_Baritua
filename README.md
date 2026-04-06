@@ -1,15 +1,15 @@
 # Centsibility - Financial Management Platform
 
-Centsibility is a comprehensive financial management platform built with Spring Boot, React, and MySQL. It simplifies personal accounting for students and young professionals by providing real-time visibility into spending habits through intuitive transaction logging and financial dashboards.
+Centsibility is a financial management platform built with Spring Boot and React. The current phase focuses on user authentication, JWT-based access, and a protected dashboard experience.
 
 ## Features
 
 - Secure user authentication and authorization with JWT
 - Role-based access control
 - Password encryption with BCrypt
-- Real-time form validation
+- Client-side and server-side form validation
 - Protected routes and personalized dashboard
-- Responsive Material-UI interface
+- Responsive Material UI interface
 
 ## Project Structure
 
@@ -17,7 +17,7 @@ Centsibility is a comprehensive financial management platform built with Spring 
 IT342_Centsibility_G4_Baritua/
 ├── backend/          # Spring Boot REST API
 ├── web/              # React web application
-├── mobile/           # Mobile application (Future)
+├── mobile/           # Reserved for a future mobile app
 ├── documents/        # Project documentation
 └── README.md         # This file
 ```
@@ -28,7 +28,7 @@ IT342_Centsibility_G4_Baritua/
 - **Framework**: Spring Boot 3.2.0
 - **Language**: Java 17
 - **Security**: Spring Security with JWT
-- **Database**: MySQL 8.0
+- **Database**: PostgreSQL
 - **ORM**: Spring Data JPA / Hibernate
 - **Build Tool**: Maven
 - **Validation**: Jakarta Bean Validation
@@ -46,7 +46,7 @@ IT342_Centsibility_G4_Baritua/
 ### Prerequisites
 - Java 17 or higher
 - Node.js 16 or higher
-- MySQL 8.0 or higher
+- PostgreSQL 14 or higher
 - Maven 3.6 or higher
 
 ### Backend Setup
@@ -56,16 +56,11 @@ IT342_Centsibility_G4_Baritua/
 cd backend
 ```
 
-2. Configure database in `src/main/resources/application.properties`:
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/centsibility
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-```
+2. Configure database in `src/main/resources/application.properties` with your PostgreSQL connection values.
 
 3. Create database and run schema:
 ```bash
-mysql -u your_username -p < src/main/resources/schema.sql
+psql -U your_username -d centsibility -f src/main/resources/schema-postgres.sql
 ```
 
 4. Start the backend:
@@ -161,7 +156,6 @@ Authenticate user and receive JWT token
 
 ## Database Schema (Phase 1)
 
-
 The database consists of three main tables:
 - **users**: User account information
 - **roles**: User roles (USER, ADMIN)
@@ -169,7 +163,7 @@ The database consists of three main tables:
 
 Security features include BCrypt password hashing (12 salt rounds), email uniqueness constraints, and automatic timestamping.
 
-## Architectureayered architecture:
+## Architecture
 
 - **Controller Layer**: Handles HTTP requests, input validation, and response formatting
 - **Service Layer**: Contains business logic and transaction management
@@ -177,7 +171,10 @@ Security features include BCrypt password hashing (12 salt rounds), email unique
 - **DTO Layer**: Transfers data between layers without exposing internal entities
 - **Security Layer**: JWT authentication and role-based access control
 
-This*Password Hashing**: BCrypt with 12 salt rounds
+This layered architecture keeps the codebase separated by responsibility and easier to maintain.
+
+Security notes:
+- **Password Hashing**: BCrypt with 12 salt rounds
 - **Authentication**: JWT tokens (24-hour expiration)
 - **Input Validation**: Client-side and server-side
 - **SQL Injection Protection**: JPA/Hibernate parameterized queries
@@ -202,7 +199,7 @@ npm run build
 
 ## Contributors
 
-**Group 4 - Baritua**  
+**Section G4 - Baritua**  
 IT342 Project - March 2026
 
 ## License
@@ -211,35 +208,24 @@ This project is developed for educational purposes as part of IT342 course.
 
 ## Support
 
-For  architecture ensures separation of concerns, maintainability, and testability.
+For questions or issues, please contact the development team or create an issue in the repository.
 
 ## Security
 
-- *questions or issues, please contact the development team or create an issue in the repository.
+- Never commit real database credentials or JWT secrets.
+- Keep CORS restricted when moving beyond development.
+- Use strong passwords and BCrypt hashing for all user credentials.
 
 ---
 
-**Last Updated:** March 4, 2026  
+**Last Updated:** April 6, 2026  
 **Version:** 1.0.0 (Phase 1 Complete)  
-**Status:** ✅ User Registration and Login Implemented## Documentation
+**Status:** ✅ User Registration and Login Implemented
+
+## Documentation
 
 Comprehensive documentation is available in the `/documents` directory:
 
 - **[Backend README](backend/README.md)** - Backend setup and API documentation
 - **[Frontend README](web/README.md)** - Frontend setup and component documentation
-- **[Database Schema](backend/src/main/resources/schema.sql)** - Complete database structure
-
-## License
-
-This project is developed for educational purposes as part of IT342 course.Documentation
-
-Comprehensive documentation is available in the `/documents` directory:
-
-- **[Backend README](backend/README.md)** - Backend setup and API documentation
-- **[Frontend README](web/README.md)** - Frontend setup and component documentation
-- **[Database Schema](backend/src/main/resources/schema.sql)** - Complete database structure
-
-## Contributors
-
-**Section G4 - Baritua**  
-IT342 Project
+- **[Database Schema](backend/src/main/resources/schema-postgres.sql)** - Complete database structure

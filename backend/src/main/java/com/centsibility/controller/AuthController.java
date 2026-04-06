@@ -7,6 +7,7 @@ import com.centsibility.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,10 +26,43 @@ public class AuthController {
         AuthResponse response = userService.registerUser(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
-    
+
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = userService.authenticateUser(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/google/login")
+    public ResponseEntity<AuthResponse> googleLogin(@RequestBody GoogleAuthRequest request) {
+        AuthResponse response = userService.loginWithGoogle(request.getToken());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/google/register")
+    public ResponseEntity<AuthResponse> googleRegister(@RequestBody GoogleAuthRequest request) {
+        AuthResponse response = userService.registerGoogleUser(request.getToken());
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<AuthResponse.UserData> currentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity.ok(userService.getCurrentUserData(authentication.getName()));
+    }
+
+    public static class GoogleAuthRequest {
+        private String token;
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
     }
 }

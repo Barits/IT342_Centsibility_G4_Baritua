@@ -1,16 +1,22 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import CssBaseline from '@mui/material/CssBaseline';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Transactions from './pages/Transactions';
+import Analytics from './pages/Analytics';
+import Budgets from './pages/Budgets';
+import Profile from './pages/Profile';
+import AddTransaction from './pages/AddTransaction';
 import PrivateRoute from './components/PrivateRoute';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#2563EB',
+      main: '#4F46E5',
       contrastText: '#FFFFFF',
     },
     secondary: {
@@ -74,10 +80,12 @@ const theme = createTheme({
 });
 
 function App() {
-  return (
+  const googleClientId = (process.env.REACT_APP_GOOGLE_CLIENT_ID || '').trim();
+
+  const appContent = (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
@@ -90,9 +98,59 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/transactions"
+            element={
+              <PrivateRoute>
+                <Transactions />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <PrivateRoute>
+                <Analytics />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/budgets"
+            element={
+              <PrivateRoute>
+                <Budgets />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/add-transaction"
+            element={
+              <PrivateRoute>
+                <AddTransaction />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </Router>
     </ThemeProvider>
+  );
+
+  if (!googleClientId) {
+    return appContent;
+  }
+
+  return (
+    <GoogleOAuthProvider clientId={googleClientId}>
+      {appContent}
+    </GoogleOAuthProvider>
   );
 }
 
