@@ -15,6 +15,53 @@ public class AuthResponse {
     public AuthResponse() {
         this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
     }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private boolean success;
+        private UserData data;
+        private String message;
+        private String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
+        private String token;
+
+        public Builder success(boolean success) {
+            this.success = success;
+            return this;
+        }
+
+        public Builder data(UserData data) {
+            this.data = data;
+            return this;
+        }
+
+        public Builder message(String message) {
+            this.message = message;
+            return this;
+        }
+
+        public Builder timestamp(String timestamp) {
+            this.timestamp = timestamp;
+            return this;
+        }
+
+        public Builder token(String token) {
+            this.token = token;
+            return this;
+        }
+
+        public AuthResponse build() {
+            AuthResponse response = new AuthResponse();
+            response.setSuccess(success);
+            response.setData(data);
+            response.setMessage(message);
+            response.setTimestamp(timestamp);
+            response.setToken(token);
+            return response;
+        }
+    }
     
     // Inner class for user data
     public static class UserData {
@@ -35,6 +82,47 @@ public class AuthResponse {
             this.lastName = lastName;
             this.email = email;
             this.role = role;
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static class Builder {
+            private Long id;
+            private String firstName;
+            private String lastName;
+            private String email;
+            private String role;
+
+            public Builder id(Long id) {
+                this.id = id;
+                return this;
+            }
+
+            public Builder firstName(String firstName) {
+                this.firstName = firstName;
+                return this;
+            }
+
+            public Builder lastName(String lastName) {
+                this.lastName = lastName;
+                return this;
+            }
+
+            public Builder email(String email) {
+                this.email = email;
+                return this;
+            }
+
+            public Builder role(String role) {
+                this.role = role;
+                return this;
+            }
+
+            public UserData build() {
+                return new UserData(id, firstName, lastName, email, role);
+            }
         }
         
         // Getters and setters
