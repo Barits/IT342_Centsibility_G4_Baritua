@@ -25,8 +25,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -66,44 +64,36 @@ public class UserService {
             throw new DuplicateEmailException("Email already registered: " + request.getEmail());
         }
         
-        // Create new user
-        User user = new User();
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-        
-        // Hash password with BCrypt
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        
         // Assign default role (USER)
         Role userRole = roleRepository.findByName("USER")
                 .orElseThrow(() -> new RuntimeException("Default role not found"));
         Set<Role> roles = new HashSet<>();
         roles.add(userRole);
-        user.setRoles(roles);
         
-        // For now, set enabled to true (skip email verification for Phase 1)
-        user.setEnabled(true);
+        // Create new user using builder
+        User user = User.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .roles(roles)
+                .enabled(true)
+                .build();
         
         // Save user to database
         User savedUser = userRepository.save(user);
-        
-        // Build response
-        AuthResponse response = new AuthResponse();
-        response.setSuccess(true);
-        response.setMessage("User registered successfully");
-        
-        AuthResponse.UserData userData = new AuthResponse.UserData();
-        userData.setId(savedUser.getId());
-        userData.setFirstName(savedUser.getFirstName());
-        userData.setLastName(savedUser.getLastName());
-        userData.setEmail(savedUser.getEmail());
-        userData.setRole("USER");
-        
-        response.setData(userData);
-        response.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
-        
-        return response;
+
+        return AuthResponse.builder()
+                .success(true)
+                .message("User registered successfully")
+                .data(AuthResponse.UserData.builder()
+                        .id(savedUser.getId())
+                        .firstName(savedUser.getFirstName())
+                        .lastName(savedUser.getLastName())
+                        .email(savedUser.getEmail())
+                        .role("USER")
+                        .build())
+                .build();
     }
     
     public AuthResponse authenticateUser(LoginRequest request) {
@@ -120,24 +110,13 @@ public class UserService {
         // Get user details
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        // Build response
-        AuthResponse response = new AuthResponse();
-        response.setSuccess(true);
-        response.setMessage("Login successful");
-        response.setToken(jwt); // Include JWT token
-        
-        AuthResponse.UserData userData = new AuthResponse.UserData();
-        userData.setId(user.getId());
-        userData.setFirstName(user.getFirstName());
-        userData.setLastName(user.getLastName());
-        userData.setEmail(user.getEmail());
-        userData.setRole(user.getRoles().iterator().next().getName());
-        
-        response.setData(userData);
-        response.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
-        
-        return response;
+
+        return AuthResponse.builder()
+                .success(true)
+                .message("Login successful")
+                .token(jwt)
+                .data(buildUserData(user))
+                .build();
     }
 
     @Transactional
@@ -179,13 +158,13 @@ public class UserService {
     }
 
     private AuthResponse.UserData buildUserData(User user) {
-        AuthResponse.UserData userData = new AuthResponse.UserData();
-        userData.setId(user.getId());
-        userData.setFirstName(user.getFirstName());
-        userData.setLastName(user.getLastName());
-        userData.setEmail(user.getEmail());
-        userData.setRole(user.getRoles().isEmpty() ? "USER" : user.getRoles().iterator().next().getName());
-        return userData;
+        return AuthResponse.UserData.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .role(user.getRoles().isEmpty() ? "USER" : user.getRoles().iterator().next().getName())
+                .build();
     }
 
     private AuthResponse buildAuthResponse(User user, String message) {
@@ -197,28 +176,28 @@ public class UserService {
         );
 
         String jwt = jwtUtils.generateJwtToken(authentication);
-        AuthResponse response = new AuthResponse();
-        response.setSuccess(true);
-        response.setMessage(message);
-        response.setToken(jwt);
-        response.setData(buildUserData(user));
-        response.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
-        return response;
+        return AuthResponse.builder()
+                .success(true)
+                .message(message)
+                .token(jwt)
+                .data(buildUserData(user))
+                .build();
     }
 
     private User createGoogleUser(GoogleTokenPayload tokenPayload) {
-        User user = new User();
-        user.setFirstName(tokenPayload.firstName());
-        user.setLastName(tokenPayload.lastName());
-        user.setEmail(tokenPayload.email());
-        user.setPassword(passwordEncoder.encode("google-auth-" + tokenPayload.email().toLowerCase(Locale.ENGLISH)));
-        user.setEnabled(true);
-
         Role userRole = roleRepository.findByName("USER")
                 .orElseThrow(() -> new RuntimeException("Default role not found"));
         Set<Role> roles = new HashSet<>();
         roles.add(userRole);
-        user.setRoles(roles);
+
+        User user = User.builder()
+                .firstName(tokenPayload.firstName())
+                .lastName(tokenPayload.lastName())
+                .email(tokenPayload.email())
+                .password(passwordEncoder.encode("google-auth-" + tokenPayload.email().toLowerCase(Locale.ENGLISH)))
+                .enabled(true)
+                .roles(roles)
+                .build();
 
         return userRepository.save(user);
     }
