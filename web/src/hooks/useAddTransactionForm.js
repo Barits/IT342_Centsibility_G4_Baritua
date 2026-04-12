@@ -1,18 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createTransaction, getCategories } from '../services/appDataService';
-
-const DEFAULT_EXPENSE_CATEGORIES = [
-  { id: 'food', label: 'Food', icon: '🍔', color: '#EF4444' },
-  { id: 'transport', label: 'Transport', icon: '🚗', color: '#3B82F6' },
-  { id: 'shopping', label: 'Shopping', icon: '🛍️', color: '#EC4899' },
-  { id: 'bills', label: 'Bills', icon: '💡', color: '#F59E0B' },
-  { id: 'entertainment', label: 'Entertainment', icon: '🎬', color: '#8B5CF6' },
-  { id: 'health', label: 'Health', icon: '💊', color: '#EF4444' },
-  { id: 'education', label: 'Education', icon: '📚', color: '#3B82F6' },
-  { id: 'housing', label: 'Housing', icon: '🏠', color: '#10B981' },
-  { id: 'subscriptions', label: 'Subscriptions', icon: '📱', color: '#3B82F6' },
-  { id: 'other', label: 'Other', icon: '📦', color: '#6B7280' }
-];
+import { createTransaction, DEFAULT_EXPENSE_CATEGORIES, getCategories } from '../services/appDataService';
 
 const useAddTransactionForm = (locationSearch, onSuccess) => {
   const [amount, setAmount] = useState('');
@@ -42,16 +29,22 @@ const useAddTransactionForm = (locationSearch, onSuccess) => {
   }, []);
 
   const expenseCategories = useMemo(() => {
-    const filteredExpenseCategories = categories.filter((item) => {
-      const normalizedId = String(item.id || '').toLowerCase();
-      const normalizedLabel = String(item.label || '').toLowerCase();
-      return !['income', 'salary', 'general-income'].includes(normalizedId)
-        && !['income', 'salary', 'general income'].includes(normalizedLabel);
+    const mergedCategories = [...categories, ...DEFAULT_EXPENSE_CATEGORIES];
+    const uniqueCategories = [];
+    const seenCategoryKeys = new Set();
+
+    mergedCategories.forEach((item) => {
+      const key = String(item.id || item.label || '').trim().toLowerCase();
+
+      if (!key || seenCategoryKeys.has(key)) {
+        return;
+      }
+
+      seenCategoryKeys.add(key);
+      uniqueCategories.push(item);
     });
 
-    return filteredExpenseCategories.length > 0
-      ? filteredExpenseCategories
-      : DEFAULT_EXPENSE_CATEGORIES;
+    return uniqueCategories;
   }, [categories]);
 
   useEffect(() => {

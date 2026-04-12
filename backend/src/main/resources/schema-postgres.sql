@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL, -- BCrypt hashed password
+    monthly_budget NUMERIC(14, 2) DEFAULT 0,
     enabled BOOLEAN DEFAULT TRUE, -- Account enabled status
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -31,6 +32,36 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Create index on email for faster lookups
 CREATE INDEX IF NOT EXISTS idx_email ON users(email);
+
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS monthly_budget NUMERIC(14, 2) DEFAULT 0;
+
+-- ======================================
+-- Table: expense_categories
+-- Description: Stores available expense categories shown in the app
+-- ======================================
+CREATE TABLE IF NOT EXISTS expense_categories (
+    id VARCHAR(50) PRIMARY KEY,
+    label VARCHAR(100) NOT NULL,
+    icon VARCHAR(20) NOT NULL,
+    color VARCHAR(20) NOT NULL,
+    sort_order INTEGER NOT NULL
+);
+
+-- Seed the default expense categories used by the UI
+INSERT INTO expense_categories (id, label, icon, color, sort_order)
+VALUES
+    ('food', 'Food', '🍔', '#EF4444', 1),
+    ('transport', 'Transport', '🚗', '#3B82F6', 2),
+    ('shopping', 'Shopping', '🛍️', '#EC4899', 3),
+    ('bills', 'Bills', '💡', '#F59E0B', 4),
+    ('entertainment', 'Entertainment', '🎬', '#8B5CF6', 5),
+    ('health', 'Health', '💊', '#EF4444', 6),
+    ('education', 'Education', '📚', '#3B82F6', 7),
+    ('housing', 'Housing', '🏠', '#10B981', 8),
+    ('subscriptions', 'Subscriptions', '📱', '#3B82F6', 9),
+    ('other', 'Other', '📦', '#6B7280', 10)
+ON CONFLICT (id) DO NOTHING;
 
 -- ======================================
 -- Table: user_roles
@@ -99,6 +130,7 @@ ON CONFLICT (name) DO NOTHING;
 -- ======================================
 COMMENT ON TABLE roles IS 'Stores user roles for role-based access control';
 COMMENT ON TABLE users IS 'Stores user account information';
+COMMENT ON TABLE expense_categories IS 'Stores available expense categories shown in the app';
 COMMENT ON TABLE user_roles IS 'Junction table for many-to-many relationship between users and roles';
 COMMENT ON TABLE transactions IS 'Stores financial transactions for each user';
 COMMENT ON COLUMN users.password IS 'BCrypt hashed password';

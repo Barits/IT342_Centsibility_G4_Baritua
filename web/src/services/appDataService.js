@@ -1,7 +1,7 @@
 import api from './api';
 import authService from './authService';
 
-const DEFAULT_CATEGORIES = [
+export const DEFAULT_EXPENSE_CATEGORIES = [
   { id: 'food', label: 'Food', icon: '🍔', color: '#EF4444' },
   { id: 'transport', label: 'Transport', icon: '🚗', color: '#3B82F6' },
   { id: 'shopping', label: 'Shopping', icon: '🛍️', color: '#EC4899' },
@@ -68,7 +68,7 @@ export const getBudgets = async () => {
 
 export const getCategories = async () => {
   const categories = await safeGet('/categories', []);
-  return categories.length > 0 ? categories : DEFAULT_CATEGORIES;
+  return categories.length > 0 ? categories : DEFAULT_EXPENSE_CATEGORIES;
 };
 
 export const createTransaction = async (payload) => {

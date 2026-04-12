@@ -2,6 +2,7 @@ package com.centsibility.controller;
 
 import com.centsibility.dto.request.LoginRequest;
 import com.centsibility.dto.request.RegisterRequest;
+import com.centsibility.dto.request.UpdateMonthlyBudgetRequest;
 import com.centsibility.dto.response.AuthResponse;
 import com.centsibility.service.UserService;
 import jakarta.validation.Valid;
@@ -52,6 +53,18 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(userService.getCurrentUserData(authentication.getName()));
+    }
+
+    @PutMapping("/me/budget")
+    public ResponseEntity<AuthResponse.UserData> updateMonthlyBudget(
+            Authentication authentication,
+            @Valid @RequestBody UpdateMonthlyBudgetRequest request
+    ) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity.ok(userService.updateMonthlyBudget(authentication.getName(), request));
     }
 
     public static class GoogleAuthRequest {

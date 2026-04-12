@@ -1,9 +1,11 @@
 package com.centsibility.service;
 
 import com.centsibility.dto.request.CreateTransactionRequest;
+import com.centsibility.model.ExpenseCategory;
 import com.centsibility.model.TransactionEntry;
 import com.centsibility.model.TransactionType;
 import com.centsibility.model.User;
+import com.centsibility.repository.ExpenseCategoryRepository;
 import com.centsibility.repository.TransactionEntryRepository;
 import com.centsibility.repository.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -22,23 +24,15 @@ import java.util.stream.Collectors;
 @Service
 public class FinanceService {
 
-    private static final List<String> DEFAULT_EXPENSE_CATEGORIES = List.of(
-            "Food",
-            "Transport",
-            "Shopping",
-            "Bills",
-            "Entertainment",
-            "Health",
-            "Education",
-            "Housing",
-            "Subscriptions",
-            "Other"
-    );
-
     private static final Set<String> INCOME_CATEGORY_KEYS = Set.of("income", "salary", "general income", "general-income");
-    private static final Set<String> DEFAULT_EXPENSE_CATEGORY_KEYS = DEFAULT_EXPENSE_CATEGORIES
+    private static final Set<String> DEFAULT_EXPENSE_CATEGORY_KEYS = ExpenseCategoryDefaults.getDefaultExpenseCategories()
             .stream()
-            .map(FinanceService::normalizeCategoryKey)
+        .map(definition -> ExpenseCategoryDefaults.normalizeCategoryKey(definition.id()))
+        .collect(Collectors.toSet());
+
+    private static final Set<String> DEFAULT_EXPENSE_LABEL_KEYS = ExpenseCategoryDefaults.getDefaultExpenseCategories()
+        .stream()
+        .map(definition -> ExpenseCategoryDefaults.normalizeCategoryKey(definition.label()))
             .collect(Collectors.toSet());
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
@@ -47,16 +41,20 @@ public class FinanceService {
 
     private final UserRepository userRepository;
     private final TransactionEntryRepository transactionEntryRepository;
+    private final ExpenseCategoryRepository expenseCategoryRepository;
 
-    public FinanceService(UserRepository userRepository, TransactionEntryRepository transactionEntryRepository) {
+    public FinanceService(UserRepository userRepository,
+                          TransactionEntryRepository transactionEntryRepository,
+                          ExpenseCategoryRepository expenseCategoryRepository) {
         this.userRepository = userRepository;
         this.transactionEntryRepository = transactionEntryRepository;
+        this.expenseCategoryRepository = expenseCategoryRepository;
     }
 
     @Transactional
     public Map<String, Object> createTransaction(String email, CreateTransactionRequest request) {
         User user = getUserByEmail(email);
-        String category = resolveAndValidateExpenseCategory(user, request.getCategory());
+        String category = resolveAndValidateExpenseCategory(request.getCategory());
 
         TransactionEntry entry = new TransactionEntry();
         entry.setUser(user);
@@ -190,9 +188,19 @@ public class FinanceService {
         ));
 
         BigDecimal spent = sumAmounts(monthEntries);
+        BigDecimal budgeted = user.getMonthlyBudget() == null ? BigDecimal.ZERO : user.getMonthlyBudget();
+        BigDecimal remaining = budgeted.subtract(spent);
+        BigDecimal percentage = budgeted.compareTo(BigDecimal.ZERO) == 0
+            ? BigDecimal.ZERO
+            : spent.multiply(BigDecimal.valueOf(100)).divide(budgeted, 2, RoundingMode.HALF_UP);
 
         Map<String, Object> payload = new HashMap<>();
-        payload.put("summary", null);
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("budgeted", budgeted);
+        summary.put("spent", spent);
+        summary.put("remaining", remaining);
+        summary.put("percentage", percentage);
+        payload.put("summary", summary);
         payload.put("categoryBudgets", new ArrayList<>());
 
         List<Map<String, Object>> uncategorized = monthEntries.stream()
@@ -215,26 +223,22 @@ public class FinanceService {
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getCategories(String email) {
-        User user = getUserByEmail(email);
-        List<String> userCategories = whereIsExpense(
-                transactionEntryRepository.findByUserOrderByTransactionDateDescCreatedAtDesc(user)
-        ).stream()
-                .map(TransactionEntry::getCategory)
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(category -> !category.isBlank())
-                .distinct()
-                .collect(Collectors.toList());
+        getUserByEmail(email);
 
-        List<String> categories = userCategories.isEmpty() ? DEFAULT_EXPENSE_CATEGORIES : userCategories;
+        List<ExpenseCategory> categories = expenseCategoryRepository.findAllByOrderBySortOrderAscLabelAsc();
+        if (categories.isEmpty()) {
+            categories = ExpenseCategoryDefaults.getDefaultExpenseCategories().stream()
+                .map(ExpenseCategoryDefaults::toEntity)
+                .collect(Collectors.toList());
+        }
 
         return categories.stream()
                 .map(category -> {
                     Map<String, Object> categoryPayload = new HashMap<>();
-                    categoryPayload.put("id", category.toLowerCase(Locale.ENGLISH).replace(" ", "-"));
-                    categoryPayload.put("label", category);
-                    categoryPayload.put("icon", iconForCategory(category));
-                    categoryPayload.put("color", colorForCategory(category));
+                    categoryPayload.put("id", category.getId());
+                    categoryPayload.put("label", category.getLabel());
+                    categoryPayload.put("icon", category.getIcon());
+                    categoryPayload.put("color", category.getColor());
                     return categoryPayload;
                 })
                 .collect(Collectors.toList());
@@ -245,26 +249,30 @@ public class FinanceService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    private String resolveAndValidateExpenseCategory(User user, String rawCategory) {
+    private String resolveAndValidateExpenseCategory(String rawCategory) {
         if (rawCategory == null || rawCategory.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category is required");
         }
 
-        String normalizedCategory = normalizeCategoryKey(rawCategory);
+        String normalizedCategory = ExpenseCategoryDefaults.normalizeCategoryKey(rawCategory);
         if (INCOME_CATEGORY_KEYS.contains(normalizedCategory)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Income categories are not allowed");
         }
 
-        Set<String> allowedCategories = new HashSet<>(DEFAULT_EXPENSE_CATEGORY_KEYS);
-        allowedCategories.addAll(whereIsExpense(
-                transactionEntryRepository.findByUserOrderByTransactionDateDescCreatedAtDesc(user)
-        ).stream().map(transaction -> normalizeCategoryKey(transaction.getCategory())).collect(Collectors.toSet()));
+        Set<String> allowedCategories = expenseCategoryRepository.findAll().stream()
+                .flatMap(category -> List.of(category.getId(), category.getLabel()).stream())
+                .filter(Objects::nonNull)
+                .map(ExpenseCategoryDefaults::normalizeCategoryKey)
+                .collect(Collectors.toCollection(HashSet::new));
+
+        allowedCategories.addAll(DEFAULT_EXPENSE_CATEGORY_KEYS);
+        allowedCategories.addAll(DEFAULT_EXPENSE_LABEL_KEYS);
 
         if (!allowedCategories.contains(normalizedCategory)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported expense category");
         }
 
-        return canonicalizeCategoryLabel(rawCategory);
+        return ExpenseCategoryDefaults.canonicalizeExpenseCategoryLabel(rawCategory);
     }
 
     private List<TransactionEntry> whereIsExpense(List<TransactionEntry> transactions) {
@@ -275,29 +283,7 @@ public class FinanceService {
     }
 
     private boolean isIncomeCategory(String category) {
-        return INCOME_CATEGORY_KEYS.contains(normalizeCategoryKey(category));
-    }
-
-    private static String normalizeCategoryKey(String category) {
-        return String.valueOf(category == null ? "" : category)
-                .trim()
-                .toLowerCase(Locale.ENGLISH)
-                .replace('_', ' ')
-                .replace('-', ' ')
-                .replaceAll("\\s+", " ");
-    }
-
-    private String canonicalizeCategoryLabel(String category) {
-        String normalized = normalizeCategoryKey(category);
-
-        if (DEFAULT_EXPENSE_CATEGORY_KEYS.contains(normalized)) {
-            return DEFAULT_EXPENSE_CATEGORIES.stream()
-                    .filter(defaultCategory -> normalizeCategoryKey(defaultCategory).equals(normalized))
-                    .findFirst()
-                    .orElse(category.trim());
-        }
-
-        return category.trim();
+        return INCOME_CATEGORY_KEYS.contains(ExpenseCategoryDefaults.normalizeCategoryKey(category));
     }
 
     private List<TransactionEntry> filterByMonth(List<TransactionEntry> transactions, YearMonth month) {
@@ -345,7 +331,7 @@ public class FinanceService {
             return "📦";
         }
 
-        return switch (normalizeCategoryKey(category)) {
+        return switch (ExpenseCategoryDefaults.normalizeCategoryKey(category)) {
             case "food" -> "🍔";
             case "transport" -> "🚗";
             case "shopping" -> "🛍️";
@@ -364,7 +350,7 @@ public class FinanceService {
             return "#6B7280";
         }
 
-        return switch (normalizeCategoryKey(category)) {
+        return switch (ExpenseCategoryDefaults.normalizeCategoryKey(category)) {
             case "food" -> "#EF4444";
             case "transport" -> "#3B82F6";
             case "shopping" -> "#EC4899";

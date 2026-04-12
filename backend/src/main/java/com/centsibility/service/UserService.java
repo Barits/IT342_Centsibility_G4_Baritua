@@ -2,6 +2,7 @@ package com.centsibility.service;
 
 import com.centsibility.dto.request.LoginRequest;
 import com.centsibility.dto.request.RegisterRequest;
+import com.centsibility.dto.request.UpdateMonthlyBudgetRequest;
 import com.centsibility.dto.response.AuthResponse;
 import com.centsibility.exception.DuplicateEmailException;
 import com.centsibility.model.Role;
@@ -25,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -76,6 +78,7 @@ public class UserService {
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .monthlyBudget(BigDecimal.ZERO)
                 .roles(roles)
                 .enabled(true)
                 .build();
@@ -157,6 +160,17 @@ public class UserService {
         return buildUserData(user);
     }
 
+    @Transactional
+    public AuthResponse.UserData updateMonthlyBudget(String email, UpdateMonthlyBudgetRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setMonthlyBudget(request.getMonthlyBudget());
+        userRepository.save(user);
+
+        return buildUserData(user);
+    }
+
     private AuthResponse.UserData buildUserData(User user) {
         return AuthResponse.UserData.builder()
                 .id(user.getId())
@@ -164,6 +178,7 @@ public class UserService {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .role(user.getRoles().isEmpty() ? "USER" : user.getRoles().iterator().next().getName())
+                .monthlyBudget(user.getMonthlyBudget())
                 .build();
     }
 
@@ -195,6 +210,7 @@ public class UserService {
                 .lastName(tokenPayload.lastName())
                 .email(tokenPayload.email())
                 .password(passwordEncoder.encode("google-auth-" + tokenPayload.email().toLowerCase(Locale.ENGLISH)))
+                .monthlyBudget(BigDecimal.ZERO)
                 .enabled(true)
                 .roles(roles)
                 .build();

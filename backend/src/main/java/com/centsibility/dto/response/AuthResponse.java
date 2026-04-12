@@ -2,6 +2,7 @@ package com.centsibility.dto.response;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.math.BigDecimal;
 
 public class AuthResponse {
     
@@ -70,18 +71,20 @@ public class AuthResponse {
         private String lastName;
         private String email;
         private String role;
+        private BigDecimal monthlyBudget;
         
         // Default constructor
         public UserData() {
         }
         
         // Constructor with all fields
-        public UserData(Long id, String firstName, String lastName, String email, String role) {
+        public UserData(Long id, String firstName, String lastName, String email, String role, BigDecimal monthlyBudget) {
             this.id = id;
             this.firstName = firstName;
             this.lastName = lastName;
             this.email = email;
             this.role = role;
+            this.monthlyBudget = monthlyBudget;
         }
 
         public static Builder builder() {
@@ -94,6 +97,7 @@ public class AuthResponse {
             private String lastName;
             private String email;
             private String role;
+            private BigDecimal monthlyBudget;
 
             public Builder id(Long id) {
                 this.id = id;
@@ -120,8 +124,13 @@ public class AuthResponse {
                 return this;
             }
 
+            public Builder monthlyBudget(BigDecimal monthlyBudget) {
+                this.monthlyBudget = monthlyBudget;
+                return this;
+            }
+
             public UserData build() {
-                return new UserData(id, firstName, lastName, email, role);
+                return new UserData(id, firstName, lastName, email, role, monthlyBudget);
             }
         }
         
@@ -164,6 +173,14 @@ public class AuthResponse {
         
         public void setRole(String role) {
             this.role = role;
+        }
+
+        public BigDecimal getMonthlyBudget() {
+            return monthlyBudget;
+        }
+
+        public void setMonthlyBudget(BigDecimal monthlyBudget) {
+            this.monthlyBudget = monthlyBudget;
         }
     }
     
