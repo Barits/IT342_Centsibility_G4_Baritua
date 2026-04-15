@@ -7,6 +7,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -55,6 +56,20 @@ public class GlobalExceptionHandler {
             errors
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex) {
+        HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            false,
+            ex.getReason() == null ? status.getReasonPhrase() : ex.getReason(),
+            status.value(),
+            LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+        );
+
+        return new ResponseEntity<>(errorResponse, status);
     }
     
     @ExceptionHandler(Exception.class)

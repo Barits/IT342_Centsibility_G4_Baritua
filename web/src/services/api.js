@@ -29,7 +29,12 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response && error.response.status === 401) {
+    const requestUrl = String(error.config?.url || '');
+    const isAuthRequest = requestUrl.includes('/auth/login')
+      || requestUrl.includes('/auth/register')
+      || requestUrl.includes('/auth/google');
+
+    if (error.response && error.response.status === 401 && !isAuthRequest) {
       // Unauthorized - clear token and redirect to login
       localStorage.removeItem('accessToken');
       localStorage.removeItem('user');

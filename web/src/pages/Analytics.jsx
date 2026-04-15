@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import AnalyticsCategoryBreakdownCard from '../components/analytics/AnalyticsCategoryBreakdownCard';
 import AnalyticsMonthlyTrendCard from '../components/analytics/AnalyticsMonthlyTrendCard';
 import AnalyticsSpendingByCategoryCard from '../components/analytics/AnalyticsSpendingByCategoryCard';
 import AnalyticsStatsRow from '../components/analytics/AnalyticsStatsRow';
@@ -37,12 +36,7 @@ const Analytics = () => {
           />
 
           <AnalyticsMonthlyTrendCard
-            items={analytics.monthlyTrend}
-            formatCurrency={formatCurrency}
-          />
-
-          <AnalyticsCategoryBreakdownCard
-            items={analytics.categoryBreakdown}
+            items={analytics.monthlyBreakdown}
             formatCurrency={formatCurrency}
           />
         </Box>

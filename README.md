@@ -1,15 +1,16 @@
 # Centsibility - Financial Management Platform
 
-Centsibility is a financial management platform built with Spring Boot and React. The current phase focuses on user authentication, JWT-based access, and a protected dashboard experience.
+Centsibility is a financial management platform built with Spring Boot and React. It now includes authenticated finance flows for transactions, analytics, and month-based budget planning.
 
 ## Features
 
 - Secure user authentication and authorization with JWT
 - Role-based access control
 - Password encryption with BCrypt
-- Client-side and server-side form validation
-- Protected routes and personalized dashboard
-- Responsive Material UI interface
+- Transactions management and category-based expense tracking
+- Analytics and dashboard summaries
+- Month-based budget plans (current month up to 2 months ahead)
+- Protected routes and responsive Material UI interface
 
 ## Project Structure
 
@@ -134,6 +135,25 @@ Authenticate user and receive JWT token
 {
   "email": "john.doe@example.com",
   "password": "SecurePass123!"
+}
+```
+
+### Budgets
+
+#### GET /api/budgets?month=YYYY-MM
+Fetch budget summary and month spending details for the selected month.
+
+#### GET /api/budgets/plans
+Fetch saved month budget plans for the authenticated user.
+
+#### POST /api/budgets/plans
+Create or update a monthly budget plan.
+
+**Request Body:**
+```json
+{
+  "month": "2026-04",
+  "amount": 7000
 }
 ```
 

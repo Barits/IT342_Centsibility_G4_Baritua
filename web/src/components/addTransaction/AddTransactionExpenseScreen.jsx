@@ -69,7 +69,7 @@ const AddTransactionExpenseScreen = ({ form, onBack }) => (
             variant="contained"
             className="save-transaction-btn"
             onClick={form.submitExpense}
-            disabled={form.saving}
+            disabled={form.saving || !form.hasCurrentMonthBudget}
           >
             {form.saving ? 'Saving...' : 'Save Transaction'}
           </Button>

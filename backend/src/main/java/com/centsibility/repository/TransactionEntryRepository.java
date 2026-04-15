@@ -11,9 +11,9 @@ import java.util.List;
 @Repository
 public interface TransactionEntryRepository extends JpaRepository<TransactionEntry, Long> {
 
-    List<TransactionEntry> findByUserOrderByTransactionDateDescCreatedAtDesc(User user);
+    List<TransactionEntry> findByUserOrderByTransactionDateDescIdDesc(User user);
 
-    List<TransactionEntry> findByUserAndTransactionDateBetweenOrderByTransactionDateDescCreatedAtDesc(
+    List<TransactionEntry> findByUserAndTransactionDateBetweenOrderByTransactionDateDescIdDesc(
             User user,
             LocalDate startDate,
             LocalDate endDate

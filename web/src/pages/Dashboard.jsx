@@ -3,10 +3,8 @@ import { Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
-import CategoryBudgetHealthCard from '../components/dashboard/CategoryBudgetHealthCard';
 import DashboardWelcome from '../components/dashboard/DashboardWelcome';
 import MonthlySnapshotCard from '../components/dashboard/MonthlySnapshotCard';
-import NeedsBudgetSetupCard from '../components/dashboard/NeedsBudgetSetupCard';
 import RecentTransactionsCard from '../components/dashboard/RecentTransactionsCard';
 import SafeToSpendCard from '../components/dashboard/SafeToSpendCard';
 import useDashboardData from '../hooks/useDashboardData';
@@ -65,28 +63,10 @@ const Dashboard = () => {
     return 'Recent';
   };
 
-  const totalBudget = budgetData.summary?.budgeted
-    ?? budgetData.categoryBudgets.reduce((sum, item) => sum + (Number(item.limit) || 0), 0);
-  const totalSpent = budgetData.summary?.spent
-    ?? budgetData.categoryBudgets.reduce((sum, item) => sum + (Number(item.spent) || 0), 0);
-  const remainingAmount = budgetData.summary?.remaining ?? (totalBudget - totalSpent);
-  const spentPercentage = budgetData.summary?.percentage ?? getPercentage(totalSpent, totalBudget);
-
-  const overThresholdItems = [...budgetData.categoryBudgets]
-    .filter((item) => getPercentage(Number(item.spent), Number(item.limit)) >= 80)
-    .sort((a, b) => getPercentage(Number(b.spent), Number(b.limit)) - getPercentage(Number(a.spent), Number(a.limit)))
-    .slice(0, 3);
-
-  const budgetHealthItems = [...budgetData.categoryBudgets]
-    .sort((a, b) => getPercentage(Number(b.spent), Number(b.limit)) - getPercentage(Number(a.spent), Number(a.limit)))
-    .slice(0, 5);
-
-  const uncategorizedExpenseItems = budgetData.uncategorized.filter((item) => {
-    const normalizedName = String(item.name || '').trim().toLowerCase();
-    return !['income', 'salary', 'general income'].includes(normalizedName);
-  });
-
-  const tipOfTheDay = "Tip: Add a monthly cap for Food first. It is the easiest budget to control week by week.";
+  const totalBudget = Number(budgetData.summary?.budgeted) || 0;
+  const totalSpent = Number(budgetData.summary?.spent) || 0;
+  const remainingAmount = Number(budgetData.summary?.remaining ?? (totalBudget - totalSpent));
+  const spentPercentage = Number(budgetData.summary?.percentage ?? getPercentage(totalSpent, totalBudget));
 
   return (
     <Box className="dashboard-root">
@@ -114,23 +94,10 @@ const Dashboard = () => {
             onOpenBudgets={() => navigate('/budgets')}
           />
 
-          <CategoryBudgetHealthCard
-            budgetHealthItems={budgetHealthItems}
-            overThresholdItems={overThresholdItems}
-            formatCurrency={formatCurrency}
-            onCreateBudget={() => navigate('/budgets')}
-          />
-
           <RecentTransactionsCard
             recentTransactions={recentTransactions}
             formatCurrencyCompact={formatCurrencyCompact}
             formatTransactionTime={formatTransactionTime}
-          />
-
-          <NeedsBudgetSetupCard
-            uncategorizedExpenseItems={uncategorizedExpenseItems}
-            tipOfTheDay={tipOfTheDay}
-            onSetCategoryBudgets={() => navigate('/budgets')}
           />
         </Box>
       </Box>

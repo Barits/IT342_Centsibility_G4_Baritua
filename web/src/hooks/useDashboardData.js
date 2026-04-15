@@ -5,6 +5,7 @@ import {
   EMPTY_BUDGETS,
   isBudgetsPayload,
   readCachedBudgets,
+  toMonthValue,
   writeCachedBudgets
 } from '../utils/financeHelpers';
 
@@ -31,9 +32,10 @@ const useDashboardData = () => {
 
   useEffect(() => {
     let isMounted = true;
+    const currentMonthValue = toMonthValue(new Date());
 
     const loadBudgetSnapshot = async () => {
-      const budgets = await getBudgets();
+      const budgets = await getBudgets(currentMonthValue);
       if (!isMounted || !isBudgetsPayload(budgets)) {
         return;
       }
@@ -69,8 +71,18 @@ const useDashboardData = () => {
     loadRecentTransactions();
     loadUser();
 
+    const handleDataUpdated = () => {
+      loadBudgetSnapshot();
+      loadRecentTransactions();
+    };
+
+    window.addEventListener('transactions:updated', handleDataUpdated);
+    window.addEventListener('budgets:updated', handleDataUpdated);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('transactions:updated', handleDataUpdated);
+      window.removeEventListener('budgets:updated', handleDataUpdated);
     };
   }, []);
 

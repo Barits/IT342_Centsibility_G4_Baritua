@@ -1,22 +1,18 @@
 import { useEffect, useState } from 'react';
-import { getBudgets, getTransactions } from '../services/appDataService';
+import { getBudgets } from '../services/appDataService';
 import {
-  getLastMonthSpentByCategory,
-  isBudgetsPayload,
-  readCachedBudgets,
-  writeCachedBudgets
+  EMPTY_BUDGETS,
+  isBudgetsPayload
 } from '../utils/financeHelpers';
 
-const useBudgetData = () => {
-  const [budgetData, setBudgetData] = useState(() => readCachedBudgets());
-  const [managedBudgets, setManagedBudgets] = useState(() => readCachedBudgets().categoryBudgets || []);
-  const [lastMonthSpentByCategory, setLastMonthSpentByCategory] = useState({});
+const useBudgetData = (selectedMonth) => {
+  const [budgetData, setBudgetData] = useState(EMPTY_BUDGETS);
 
   useEffect(() => {
     let isMounted = true;
 
     const loadBudgetData = async () => {
-      const [budgets, transactions] = await Promise.all([getBudgets(), getTransactions()]);
+      const budgets = await getBudgets(selectedMonth);
 
       if (!isMounted) {
         return;
@@ -24,31 +20,29 @@ const useBudgetData = () => {
 
       if (isBudgetsPayload(budgets)) {
         setBudgetData(budgets);
-        setManagedBudgets(Array.isArray(budgets.categoryBudgets) ? budgets.categoryBudgets : []);
-        writeCachedBudgets(budgets);
+      } else {
+        setBudgetData(EMPTY_BUDGETS);
       }
-
-      setLastMonthSpentByCategory(getLastMonthSpentByCategory(transactions));
     };
 
     loadBudgetData();
 
+    const handleRefresh = () => {
+      loadBudgetData();
+    };
+
+    window.addEventListener('budgets:updated', handleRefresh);
+    window.addEventListener('transactions:updated', handleRefresh);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('budgets:updated', handleRefresh);
+      window.removeEventListener('transactions:updated', handleRefresh);
     };
-  }, []);
-
-  const persistBudgetData = (nextData) => {
-    setBudgetData(nextData);
-    writeCachedBudgets(nextData);
-  };
+  }, [selectedMonth]);
 
   return {
-    budgetData,
-    managedBudgets,
-    setManagedBudgets,
-    lastMonthSpentByCategory,
-    persistBudgetData
+    budgetData
   };
 };
 

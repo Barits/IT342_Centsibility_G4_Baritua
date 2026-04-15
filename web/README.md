@@ -19,18 +19,33 @@ web/
 │   └── index.html
 ├── src/
 │   ├── components/
-│   │   └── PrivateRoute.jsx
+│   │   ├── PrivateRoute.jsx
+│   │   ├── Sidebar.jsx
+│   │   └── ...
 │   ├── pages/
 │   │   ├── Login.jsx
 │   │   ├── Register.jsx
-│   │   └── Dashboard.jsx
+│   │   ├── Dashboard.jsx
+│   │   ├── Transactions.jsx
+│   │   ├── Analytics.jsx
+│   │   ├── Budgets.jsx
+│   │   ├── AddBudget.jsx
+│   │   ├── AddTransaction.jsx
+│   │   └── Profile.jsx
 │   ├── services/
 │   │   ├── api.js
-│   │   └── authService.js
+│   │   ├── authService.js
+│   │   └── appDataService.js
+│   ├── hooks/
+│   │   ├── useBudgetData.js
+│   │   ├── useAddBudgetForm.js
+│   │   └── ...
 │   ├── css/
 │   │   ├── Dashboard.css
 │   │   ├── Login.css
-│   │   └── Register.css
+│   │   ├── Register.css
+│   │   ├── Budgets.css
+│   │   └── AddBudget.css
 │   ├── App.jsx
 │   ├── index.js
 │   └── index.css
@@ -95,6 +110,12 @@ The application will run at `http://localhost:3000`
 - Logout functionality
 - Navigation
 
+### Budget Planning
+- Add month-based budget plans
+- Select month from current month to 2 months ahead
+- View monthly budget summaries and planned amounts
+- Backend-integrated budget plan persistence
+
 ## Available Scripts
 
 ### `npm start`
@@ -110,5 +131,8 @@ Builds the application for production to the `build` folder
 
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User authentication
+- `GET /api/budgets?month=YYYY-MM` - Monthly budget summary
+- `GET /api/budgets/plans` - List monthly budget plans
+- `POST /api/budgets/plans` - Create/update budget plan
 
 All API requests include automatic JWT token injection and centralized error handling.

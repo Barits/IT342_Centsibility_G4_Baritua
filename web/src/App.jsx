@@ -9,6 +9,8 @@ import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Analytics from './pages/Analytics';
 import Budgets from './pages/Budgets';
+import AddBudget from './pages/AddBudget';
+import EditBudget from './pages/EditBudget';
 import Profile from './pages/Profile';
 import AddTransaction from './pages/AddTransaction';
 import PrivateRoute from './components/PrivateRoute';
@@ -119,6 +121,22 @@ function App() {
             element={
               <PrivateRoute>
                 <Budgets />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/add-budget"
+            element={
+              <PrivateRoute>
+                <AddBudget />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/edit-budget"
+            element={
+              <PrivateRoute>
+                <EditBudget />
               </PrivateRoute>
             }
           />

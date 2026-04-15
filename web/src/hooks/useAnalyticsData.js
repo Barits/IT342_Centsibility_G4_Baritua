@@ -6,7 +6,7 @@ const ANALYTICS_CACHE_KEY = 'centsibility.analytics.overview';
 const EMPTY_ANALYTICS = {
   summary: null,
   spendingByCategory: [],
-  monthlyTrend: [],
+  monthlyBreakdown: [],
   categoryBreakdown: []
 };
 
@@ -16,7 +16,7 @@ const isAnalyticsPayload = (value) => {
   }
 
   return Array.isArray(value.spendingByCategory)
-    && Array.isArray(value.monthlyTrend)
+    && (Array.isArray(value.monthlyBreakdown) || Array.isArray(value.categoryBreakdown))
     && Array.isArray(value.categoryBreakdown);
 };
 
@@ -60,13 +60,29 @@ const useAnalyticsData = () => {
 
     loadAnalytics();
 
+    const handleRefresh = () => {
+      loadAnalytics();
+    };
+
+    window.addEventListener('transactions:updated', handleRefresh);
+    window.addEventListener('budgets:updated', handleRefresh);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('transactions:updated', handleRefresh);
+      window.removeEventListener('budgets:updated', handleRefresh);
     };
   }, []);
 
   return {
-    analytics: isAnalyticsPayload(analytics) ? analytics : EMPTY_ANALYTICS
+    analytics: isAnalyticsPayload(analytics)
+      ? {
+          ...analytics,
+          monthlyBreakdown: Array.isArray(analytics.monthlyBreakdown)
+            ? analytics.monthlyBreakdown
+            : analytics.categoryBreakdown
+        }
+      : EMPTY_ANALYTICS
   };
 };
 

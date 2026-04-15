@@ -21,7 +21,8 @@ backend/
 │   │   │   ├── config/            # Configuration classes
 │   │   │   │   └── SecurityConfig.java
 │   │   │   ├── controller/        # REST Controllers
-│   │   │   │   └── AuthController.java
+│   │   │   │   ├── AuthController.java
+│   │   │   │   └── FinanceController.java
 │   │   │   ├── dto/               # Data Transfer Objects
 │   │   │   │   ├── request/
 │   │   │   │   │   ├── RegisterRequest.java
@@ -33,16 +34,22 @@ backend/
 │   │   │   │   └── GlobalExceptionHandler.java
 │   │   │   ├── model/             # Entity classes
 │   │   │   │   ├── User.java
-│   │   │   │   └── Role.java
+│   │   │   │   ├── Role.java
+│   │   │   │   ├── TransactionEntry.java
+│   │   │   │   └── BudgetPlan.java
 │   │   │   ├── repository/        # JPA Repositories
 │   │   │   │   ├── UserRepository.java
-│   │   │   │   └── RoleRepository.java
+│   │   │   │   ├── RoleRepository.java
+│   │   │   │   ├── TransactionEntryRepository.java
+│   │   │   │   ├── ExpenseCategoryRepository.java
+│   │   │   │   └── BudgetPlanRepository.java
 │   │   │   ├── security/          # Security components
 │   │   │   │   ├── JwtUtils.java
 │   │   │   │   ├── JwtAuthenticationFilter.java
 │   │   │   │   └── UserDetailsServiceImpl.java
 │   │   │   ├── service/           # Business logic
-│   │   │   │   └── UserService.java
+│   │   │   │   ├── UserService.java
+│   │   │   │   └── FinanceService.java
 │   │   │   └── CentsibilityApplication.java
 │   │   └── resources/
 │   │       ├── application.properties
@@ -163,6 +170,39 @@ The application will start on `http://localhost:8080`
 {
   "email": "john.doe@example.com",
   "password": "SecurePass123!"
+}
+```
+
+### Finance
+
+#### GET /api/transactions
+Returns authenticated user's transactions.
+
+#### POST /api/transactions
+Creates a new expense transaction.
+
+#### GET /api/dashboard/overview
+Returns dashboard summary cards and recent transactions.
+
+#### GET /api/analytics
+Returns analytics summaries and trends.
+
+#### GET /api/categories
+Returns configured expense categories.
+
+#### GET /api/budgets?month=YYYY-MM
+Returns budget summary for selected month.
+
+#### GET /api/budgets/plans
+Returns saved budget plans per month.
+
+#### POST /api/budgets/plans
+Creates or updates a budget plan for a month (current to +2 months).
+
+```json
+{
+  "month": "2026-04",
+  "amount": 7000
 }
 ```
 - **Response (200 OK):**

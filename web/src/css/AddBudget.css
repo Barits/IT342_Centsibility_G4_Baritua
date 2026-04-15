@@ -1,0 +1,79 @@
+.add-budget-root {
+  min-height: 100vh;
+  background: #f3f4f6;
+}
+
+.add-budget-main {
+  min-height: 100vh;
+  margin-left: 280px;
+  padding: 0 32px 72px;
+}
+
+.add-budget-header-row {
+  margin: 8px 0 18px;
+}
+
+.add-budget-back-btn {
+  text-transform: none !important;
+  border-radius: 10px !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+}
+
+.add-budget-card {
+  max-width: 720px;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  padding: 28px;
+}
+
+.add-budget-title {
+  font-weight: 700 !important;
+  color: #0f172a;
+}
+
+.add-budget-subtitle {
+  margin-top: 8px !important;
+  margin-bottom: 22px !important;
+  color: #64748b;
+}
+
+.add-budget-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.add-budget-field {
+  min-width: 0;
+}
+
+.add-budget-label {
+  margin-bottom: 8px;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.add-budget-error-alert {
+  margin-top: 16px;
+}
+
+.add-budget-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+@media (max-width: 1024px) {
+  .add-budget-main {
+    margin-left: 0;
+    padding: 0 16px 92px;
+  }
+
+  .add-budget-card {
+    padding: 20px 16px;
+  }
+}

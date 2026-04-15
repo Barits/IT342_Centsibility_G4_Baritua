@@ -100,6 +100,24 @@ CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(transaction_date);
 
 -- ======================================
+-- Table: budget_plans
+-- Description: Stores per-user monthly budget plans (YYYY-MM)
+-- ======================================
+CREATE TABLE IF NOT EXISTS budget_plans (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    budget_month VARCHAR(7) NOT NULL,
+    amount NUMERIC(14, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_budget_plans_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT uk_budget_plans_user_month UNIQUE (user_id, budget_month)
+);
+
+CREATE INDEX IF NOT EXISTS idx_budget_plans_user_id ON budget_plans(user_id);
+CREATE INDEX IF NOT EXISTS idx_budget_plans_month ON budget_plans(budget_month);
+
+-- ======================================
 -- Function: Update timestamp on row update
 -- ======================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -114,6 +132,9 @@ $$ language 'plpgsql';
 -- Trigger: Auto-update updated_at for users table
 -- ======================================
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_budget_plans_updated_at BEFORE UPDATE ON budget_plans
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ======================================
@@ -133,5 +154,6 @@ COMMENT ON TABLE users IS 'Stores user account information';
 COMMENT ON TABLE expense_categories IS 'Stores available expense categories shown in the app';
 COMMENT ON TABLE user_roles IS 'Junction table for many-to-many relationship between users and roles';
 COMMENT ON TABLE transactions IS 'Stores financial transactions for each user';
+COMMENT ON TABLE budget_plans IS 'Stores monthly budget plans per user';
 COMMENT ON COLUMN users.password IS 'BCrypt hashed password';
 COMMENT ON COLUMN users.enabled IS 'Account enabled status';

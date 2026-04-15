@@ -17,6 +17,19 @@
   padding: 12px 0 18px;
 }
 
+.budgets-month-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0 18px;
+}
+
+.budgets-month-select {
+  min-width: 220px;
+  background: #ffffff;
+}
+
 .budgets-month-arrow {
   width: 44px;
   height: 44px;
@@ -53,6 +66,10 @@
   display: grid;
   grid-template-columns: 1.45fr 0.85fr;
   gap: 14px;
+}
+
+.budgets-management-layout.monthly-layout {
+  grid-template-columns: 1fr;
 }
 
 .budgets-management-main {
@@ -386,6 +403,47 @@
   color: #1e3a8a;
 }
 
+.monthly-budget-list-card {
+  border-radius: 16px;
+  border: 1px solid #dbeafe;
+  background: #ffffff;
+  padding: 8px 14px;
+}
+
+.monthly-budget-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 4px;
+  border-bottom: 1px solid #eff6ff;
+}
+
+.monthly-budget-row-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.monthly-budget-row:last-child {
+  border-bottom: none;
+}
+
+.monthly-budget-month {
+  color: #0f172a;
+  font-weight: 700 !important;
+}
+
+.monthly-budget-updated-at {
+  color: #64748b;
+}
+
+.monthly-budget-amount {
+  color: #1d4ed8;
+  font-weight: 800 !important;
+}
+
 .category-budget-amount {
   color: #0f172a;
   font-weight: 800 !important;
@@ -492,6 +550,15 @@
   .budgets-main {
     margin-left: 0;
     padding: 0 14px 70px;
+  }
+
+  .budgets-month-filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .budgets-month-select {
+    min-width: 0;
   }
 
   .budgets-month-selector {

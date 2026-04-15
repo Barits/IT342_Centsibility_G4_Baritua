@@ -1,84 +1,81 @@
-import React, { useState } from 'react';
-import { Box, Typography, Paper, Button } from '@mui/material';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Box, Typography, Paper, Button, MenuItem, TextField } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import BudgetOverviewCard from '../components/budgets/BudgetOverviewCard';
-import CategoryBudgetCard from '../components/budgets/CategoryBudgetCard';
-import CategoriesWithoutBudgetsPanel from '../components/budgets/CategoriesWithoutBudgetsPanel';
-import MonthSelector from '../components/budgets/MonthSelector';
-import SuggestedBudgetList from '../components/budgets/SuggestedBudgetList';
 import useBudgetData from '../hooks/useBudgetData';
-import { formatCurrency, getPercentage, getProgressTone } from '../utils/financeHelpers';
+import { getBudgetPlans } from '../services/appDataService';
+import {
+  formatCurrency,
+  getPercentage,
+  getProgressTone,
+  getBudgetMonthOptions,
+  isMonthWithinAllowedRange,
+  toMonthValue,
+  formatMonthLabelFromValue
+} from '../utils/financeHelpers';
 import '../css/Budgets.css';
 
-const SUGGESTED_BUDGETS = [
-  { id: 'food', name: 'Food', icon: '🍔', amount: 6000 },
-  { id: 'rent', name: 'Rent', icon: '🏠', amount: 12000 },
-  { id: 'bills', name: 'Bills', icon: '💡', amount: 3500 }
-];
-
-const EXCLUDED_UNCATEGORIZED = ['income', 'salary', 'general income'];
-
 const Budgets = () => {
-  const [currentMonth] = useState('Current month');
-  const [editingBudgetId, setEditingBudgetId] = useState(null);
-  const [editingLimit, setEditingLimit] = useState('');
-  const [showUnusedCategories, setShowUnusedCategories] = useState(true);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const currentMonthValue = toMonthValue(new Date());
+  const [selectedMonth, setSelectedMonth] = useState(() => location.state?.selectedMonth || currentMonthValue);
+  const [monthPlans, setMonthPlans] = useState([]);
   const {
-    budgetData,
-    managedBudgets,
-    setManagedBudgets,
-    lastMonthSpentByCategory,
-    persistBudgetData
-  } = useBudgetData();
+    budgetData
+  } = useBudgetData(selectedMonth);
 
-  const totalBudget = budgetData.summary?.budgeted
-    ?? managedBudgets.reduce((sum, item) => sum + (Number(item.limit) || 0), 0);
-  const totalSpent = budgetData.summary?.spent
-    ?? managedBudgets.reduce((sum, item) => sum + (Number(item.spent) || 0), 0);
-  const remainingAmount = budgetData.summary?.remaining ?? (totalBudget - totalSpent);
-  const spentPercentage = budgetData.summary?.percentage ?? getPercentage(totalSpent, totalBudget);
-  const uncategorizedExpenseCategories = (budgetData.uncategorized || []).filter((category) => {
-    const normalizedName = String(category.name || '').trim().toLowerCase();
-    return !EXCLUDED_UNCATEGORIZED.includes(normalizedName);
-  });
+  const monthOptions = useMemo(() => getBudgetMonthOptions(), []);
+  const selectedPlan = monthPlans.find((plan) => plan.month === selectedMonth);
+  const totalBudget = (Number(budgetData.summary?.budgeted) || 0) || (Number(selectedPlan?.amount) || 0);
+  const totalSpent = Number(budgetData.summary?.spent) || 0;
 
-  const handleCreateBudget = () => {};
+  const remainingAmount = totalBudget - totalSpent;
+  const spentPercentage = getPercentage(totalSpent, totalBudget);
 
-  const handleSetBudget = (categoryName) => {
-    void categoryName;
-  };
+  const sortedMonthPlans = [...monthPlans].sort((a, b) => a.month.localeCompare(b.month));
 
-  const startEditBudget = (budget) => {
-    setEditingBudgetId(budget.id);
-    setEditingLimit(String(budget.limit ?? ''));
-  };
-
-  const cancelEditBudget = () => {
-    setEditingBudgetId(null);
-    setEditingLimit('');
-  };
-
-  const saveBudgetLimit = (budgetId) => {
-    const parsedLimit = Number(editingLimit);
-    if (!Number.isFinite(parsedLimit) || parsedLimit < 0) {
-      return;
+  useEffect(() => {
+    const nextSelectedMonth = location.state?.selectedMonth;
+    if (nextSelectedMonth) {
+      setSelectedMonth(nextSelectedMonth);
     }
+  }, [location.state]);
 
-    const updatedBudgets = managedBudgets.map((item) => (
-      item.id === budgetId
-        ? { ...item, limit: parsedLimit }
-        : item
-    ));
+  useEffect(() => {
+    let isMounted = true;
 
-    setManagedBudgets(updatedBudgets);
+    const loadMonthPlans = async () => {
+      const plans = await getBudgetPlans();
 
-    const nextData = { ...budgetData, categoryBudgets: updatedBudgets };
-    persistBudgetData(nextData);
+      if (!isMounted) {
+        return;
+      }
 
-    cancelEditBudget();
+      setMonthPlans(Array.isArray(plans) ? plans : []);
+    };
+
+    loadMonthPlans();
+
+    const handleBudgetOrTransactionUpdate = () => {
+      loadMonthPlans();
+    };
+
+    window.addEventListener('budgets:updated', handleBudgetOrTransactionUpdate);
+    window.addEventListener('transactions:updated', handleBudgetOrTransactionUpdate);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('budgets:updated', handleBudgetOrTransactionUpdate);
+      window.removeEventListener('transactions:updated', handleBudgetOrTransactionUpdate);
+    };
+  }, [location.state?.refreshTs]);
+
+  const handleCreateBudget = () => {
+    navigate('/add-budget');
   };
 
   return (
@@ -90,7 +87,24 @@ const Budgets = () => {
           showAvatar={false}
         />
 
-      <MonthSelector currentMonth={currentMonth} />
+      <Box className="budgets-month-filter-row">
+        <TextField
+          select
+          value={selectedMonth}
+          onChange={(event) => setSelectedMonth(event.target.value)}
+          className="budgets-month-select"
+        >
+          {monthOptions.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <Button variant="contained" className="new-budget-btn" onClick={handleCreateBudget}>
+          Add Budget
+        </Button>
+      </Box>
 
       <Box className="budgets-content">
         <Box className="budget-overview-row">
@@ -119,84 +133,65 @@ const Budgets = () => {
           />
         </Box>
 
-        <Box className="budgets-management-layout">
+        <Box className="budgets-management-layout monthly-layout">
           <Box className="budgets-management-main">
             <Box className="budgets-section-header-row">
               <Typography variant="h6" className="budgets-section-title">
-                Category Budgets
+                Monthly Budgets
               </Typography>
-              <Button variant="contained" className="new-budget-btn" onClick={handleCreateBudget}>
-                New Budget
-              </Button>
             </Box>
 
-          {managedBudgets.length === 0 ? (
-            <Paper elevation={0} className="budget-empty-active">
-              <AddCircleOutlineIcon className="budget-empty-icon" />
-              <Typography variant="h6" className="budget-empty-title">
-                Create your first budget
-              </Typography>
-              <Typography variant="body2" className="budget-empty-description">
-                Set a monthly limit for at least one category to start tracking spending health.
-              </Typography>
-              <Button variant="contained" className="budget-empty-action" onClick={handleCreateBudget}>
-                Create First Budget
-              </Button>
-
-              <Box className="suggested-budgets-header">
-                <AutoAwesomeIcon className="suggested-budgets-icon" />
-                <Typography variant="subtitle2" className="suggested-budgets-title">
-                  Suggested Budgets
+            {sortedMonthPlans.length === 0 ? (
+              <Paper elevation={0} className="budget-empty-active">
+                <AddCircleOutlineIcon className="budget-empty-icon" />
+                <Typography variant="h6" className="budget-empty-title">
+                  No monthly budgets yet
                 </Typography>
-              </Box>
-
-              <SuggestedBudgetList
-                budgets={SUGGESTED_BUDGETS}
-                formatCurrency={formatCurrency}
-                onSetBudget={handleSetBudget}
-              />
-            </Paper>
-          ) : (
-            <>
-              <Box className="category-budgets-list">
-                {managedBudgets.map((budget) => {
-                  const normalizedName = String(budget.name || '').trim().toLowerCase();
-                  const lastMonthSpent = lastMonthSpentByCategory[normalizedName] || 0;
-
-                  return (
-                    <CategoryBudgetCard
-                      key={budget.id}
-                      budget={budget}
-                      lastMonthSpent={lastMonthSpent}
-                      editingBudgetId={editingBudgetId}
-                      editingLimit={editingLimit}
-                      onEditingLimitChange={setEditingLimit}
-                      onSave={saveBudgetLimit}
-                      onCancel={cancelEditBudget}
-                      onStartEdit={startEditBudget}
-                      formatCurrency={formatCurrency}
-                    />
-                  );
-                })}
-              </Box>
-              <Paper elevation={0} className="budget-totals-footer">
-                <Typography variant="body2" className="budget-totals-item">
-                  Total Planned: <strong>{formatCurrency(managedBudgets.reduce((sum, item) => sum + (Number(item.limit) || 0), 0))}</strong>
+                <Typography variant="body2" className="budget-empty-description">
+                  Add a monthly budget for this month or up to 2 months in advance.
                 </Typography>
-                <Typography variant="body2" className="budget-totals-item">
-                  Total Actual: <strong>{formatCurrency(managedBudgets.reduce((sum, item) => sum + (Number(item.spent) || 0), 0))}</strong>
-                </Typography>
+                <Button variant="contained" className="budget-empty-action" onClick={handleCreateBudget}>
+                  Add First Monthly Budget
+                </Button>
               </Paper>
-            </>
-          )}
-          </Box>
+            ) : (
+              <Paper elevation={0} className="monthly-budget-list-card">
+                {sortedMonthPlans.map((plan) => (
+                  <Box key={plan.month} className="monthly-budget-row">
+                    <Box>
+                      <Typography variant="body1" className="monthly-budget-month">
+                        {formatMonthLabelFromValue(plan.month)}
+                      </Typography>
+                      <Typography variant="caption" className="monthly-budget-updated-at">
+                        Last updated: {new Date(plan.updatedAt || Date.now()).toLocaleDateString('en-PH')}
+                      </Typography>
+                    </Box>
 
-            <CategoriesWithoutBudgetsPanel
-              categories={uncategorizedExpenseCategories}
-              showUnusedCategories={showUnusedCategories}
-              onToggle={() => setShowUnusedCategories((prev) => !prev)}
-              onSetBudget={handleSetBudget}
-            />
+                    <Box className="monthly-budget-row-actions">
+                      <Typography variant="h6" className="monthly-budget-amount">
+                        {formatCurrency(Number(plan.amount) || 0)}
+                      </Typography>
+                      {isMonthWithinAllowedRange(plan.month) && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          className="edit-budget-inline-btn"
+                          onClick={() => navigate('/edit-budget', {
+                            state: {
+                              month: plan.month,
+                              amount: plan.amount
+                            }
+                          })}
+                        >
+                          Edit Budget
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
+                ))}
+              </Paper>
+            )}
+          </Box>
         </Box>
       </Box>
       </Box>

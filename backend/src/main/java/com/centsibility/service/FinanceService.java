@@ -1,10 +1,13 @@
 package com.centsibility.service;
 
 import com.centsibility.dto.request.CreateTransactionRequest;
+import com.centsibility.dto.request.UpsertBudgetPlanRequest;
+import com.centsibility.model.BudgetPlan;
 import com.centsibility.model.ExpenseCategory;
 import com.centsibility.model.TransactionEntry;
 import com.centsibility.model.TransactionType;
 import com.centsibility.model.User;
+import com.centsibility.repository.BudgetPlanRepository;
 import com.centsibility.repository.ExpenseCategoryRepository;
 import com.centsibility.repository.TransactionEntryRepository;
 import com.centsibility.repository.UserRepository;
@@ -17,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,19 +40,21 @@ public class FinanceService {
             .collect(Collectors.toSet());
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
-    private static final DateTimeFormatter MONTH_FORMAT = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH);
     private static final DateTimeFormatter PERIOD_FORMAT = DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH);
 
     private final UserRepository userRepository;
     private final TransactionEntryRepository transactionEntryRepository;
     private final ExpenseCategoryRepository expenseCategoryRepository;
+    private final BudgetPlanRepository budgetPlanRepository;
 
     public FinanceService(UserRepository userRepository,
                           TransactionEntryRepository transactionEntryRepository,
-                          ExpenseCategoryRepository expenseCategoryRepository) {
+                          ExpenseCategoryRepository expenseCategoryRepository,
+                          BudgetPlanRepository budgetPlanRepository) {
         this.userRepository = userRepository;
         this.transactionEntryRepository = transactionEntryRepository;
         this.expenseCategoryRepository = expenseCategoryRepository;
+        this.budgetPlanRepository = budgetPlanRepository;
     }
 
     @Transactional
@@ -74,7 +80,7 @@ public class FinanceService {
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getTransactions(String email) {
         User user = getUserByEmail(email);
-        List<TransactionEntry> transactions = transactionEntryRepository.findByUserOrderByTransactionDateDescCreatedAtDesc(user);
+        List<TransactionEntry> transactions = transactionEntryRepository.findByUserOrderByTransactionDateDescIdDesc(user);
 
         return whereIsExpense(transactions)
                 .stream()
@@ -86,7 +92,7 @@ public class FinanceService {
     public Map<String, Object> getDashboardOverview(String email) {
         User user = getUserByEmail(email);
         List<TransactionEntry> transactions = whereIsExpense(
-                transactionEntryRepository.findByUserOrderByTransactionDateDescCreatedAtDesc(user)
+            transactionEntryRepository.findByUserOrderByTransactionDateDescIdDesc(user)
         );
 
         YearMonth currentMonth = YearMonth.now();
@@ -132,11 +138,14 @@ public class FinanceService {
     public Map<String, Object> getAnalytics(String email) {
         User user = getUserByEmail(email);
         List<TransactionEntry> transactions = whereIsExpense(
-                transactionEntryRepository.findByUserOrderByTransactionDateDescCreatedAtDesc(user)
+            transactionEntryRepository.findByUserOrderByTransactionDateDescIdDesc(user)
         );
 
         BigDecimal totalExpenses = sumAmounts(transactions);
-        BigDecimal currentMonthBudget = sumAmounts(filterByMonth(transactions, YearMonth.now()));
+        BigDecimal currentMonthBudget = budgetPlanRepository
+            .findByUserAndBudgetMonth(user, YearMonth.now().toString())
+            .map(BudgetPlan::getAmount)
+            .orElseGet(() -> user.getMonthlyBudget() == null ? BigDecimal.ZERO : user.getMonthlyBudget());
 
         Map<String, BigDecimal> expenseByCategory = transactions.stream()
                 .collect(Collectors.groupingBy(
@@ -157,16 +166,6 @@ public class FinanceService {
             spendingByCategory.add(categoryPayload);
         });
 
-        List<Map<String, Object>> monthlyTrend = new ArrayList<>();
-        for (int i = 5; i >= 0; i--) {
-            YearMonth month = YearMonth.now().minusMonths(i);
-            List<TransactionEntry> monthEntries = filterByMonth(transactions, month);
-            Map<String, Object> monthPayload = new HashMap<>();
-            monthPayload.put("month", month.format(MONTH_FORMAT));
-            monthPayload.put("expenses", sumAmounts(monthEntries));
-            monthlyTrend.add(monthPayload);
-        }
-
         Map<String, Object> summary = new HashMap<>();
         summary.put("currentMonthBudget", currentMonthBudget);
         summary.put("totalExpenses", totalExpenses);
@@ -174,21 +173,30 @@ public class FinanceService {
         Map<String, Object> payload = new HashMap<>();
         payload.put("summary", summary);
         payload.put("spendingByCategory", spendingByCategory);
-        payload.put("monthlyTrend", monthlyTrend);
+        payload.put("monthlyBreakdown", spendingByCategory);
         payload.put("categoryBreakdown", spendingByCategory);
         return payload;
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Object> getBudgets(String email) {
+    public Map<String, Object> getBudgets(String email, String month) {
         User user = getUserByEmail(email);
+        YearMonth targetMonth = resolveBudgetMonthOrDefault(month);
         List<TransactionEntry> monthEntries = whereIsExpense(filterByMonth(
-                transactionEntryRepository.findByUserOrderByTransactionDateDescCreatedAtDesc(user),
-                YearMonth.now()
+            transactionEntryRepository.findByUserOrderByTransactionDateDescIdDesc(user),
+                targetMonth
         ));
 
         BigDecimal spent = sumAmounts(monthEntries);
-        BigDecimal budgeted = user.getMonthlyBudget() == null ? BigDecimal.ZERO : user.getMonthlyBudget();
+        BigDecimal budgeted = budgetPlanRepository
+                .findByUserAndBudgetMonth(user, targetMonth.toString())
+                .map(BudgetPlan::getAmount)
+                .orElseGet(() -> {
+                    if (YearMonth.now().equals(targetMonth) && user.getMonthlyBudget() != null) {
+                        return user.getMonthlyBudget();
+                    }
+                    return BigDecimal.ZERO;
+                });
         BigDecimal remaining = budgeted.subtract(spent);
         BigDecimal percentage = budgeted.compareTo(BigDecimal.ZERO) == 0
             ? BigDecimal.ZERO
@@ -202,6 +210,7 @@ public class FinanceService {
         summary.put("percentage", percentage);
         payload.put("summary", summary);
         payload.put("categoryBudgets", new ArrayList<>());
+        payload.put("selectedMonth", targetMonth.toString());
 
         List<Map<String, Object>> uncategorized = monthEntries.stream()
                 .map(TransactionEntry::getCategory)
@@ -218,6 +227,59 @@ public class FinanceService {
 
         payload.put("uncategorized", uncategorized);
         payload.put("spentThisMonth", spent);
+        return payload;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getBudgetPlans(String email) {
+        User user = getUserByEmail(email);
+        List<BudgetPlan> plans = budgetPlanRepository.findByUserOrderByBudgetMonthAsc(user);
+
+        return plans.stream()
+                .map(plan -> {
+                    Map<String, Object> payload = new HashMap<>();
+                    payload.put("id", plan.getId());
+                    payload.put("month", plan.getBudgetMonth());
+                    payload.put("amount", plan.getAmount());
+                    payload.put("updatedAt", plan.getUpdatedAt() == null ? null : plan.getUpdatedAt().toString());
+                    return payload;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public Map<String, Object> upsertBudgetPlan(String email, UpsertBudgetPlanRequest request) {
+        User user = getUserByEmail(email);
+        YearMonth requestedMonth = parseBudgetMonth(request.getMonth());
+
+        if (!isAllowedBudgetMonth(requestedMonth)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Budget month must be current month up to 2 months in the future");
+        }
+
+        BudgetPlan plan = budgetPlanRepository
+                .findByUserAndBudgetMonth(user, requestedMonth.toString())
+                .orElseGet(() -> {
+            BudgetPlan created = new BudgetPlan();
+            created.setUser(user);
+            created.setBudgetMonth(requestedMonth.toString());
+            return created;
+        });
+
+        plan.setAmount(request.getAmount());
+        BudgetPlan savedPlan = budgetPlanRepository.save(plan);
+
+        // Keep existing profile monthly budget aligned for the current month.
+        if (YearMonth.now().equals(requestedMonth)) {
+            user.setMonthlyBudget(request.getAmount());
+            userRepository.save(user);
+        }
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("id", savedPlan.getId());
+        payload.put("month", savedPlan.getBudgetMonth());
+        payload.put("amount", savedPlan.getAmount());
+        payload.put("updatedAt", savedPlan.getUpdatedAt() == null ? null : savedPlan.getUpdatedAt().toString());
         return payload;
     }
 
@@ -297,6 +359,34 @@ public class FinanceService {
         return transactions.stream()
                 .map(TransactionEntry::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private YearMonth resolveBudgetMonthOrDefault(String monthValue) {
+        if (monthValue == null || monthValue.isBlank()) {
+            return YearMonth.now();
+        }
+
+        YearMonth parsedMonth = parseBudgetMonth(monthValue);
+        if (!isAllowedBudgetMonth(parsedMonth)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Budget month must be current month up to 2 months in the future");
+        }
+
+        return parsedMonth;
+    }
+
+    private YearMonth parseBudgetMonth(String monthValue) {
+        try {
+            return YearMonth.parse(monthValue);
+        } catch (DateTimeParseException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid month format. Use YYYY-MM");
+        }
+    }
+
+    private boolean isAllowedBudgetMonth(YearMonth month) {
+        YearMonth currentMonth = YearMonth.now();
+        YearMonth maxMonth = currentMonth.plusMonths(2);
+        return !month.isBefore(currentMonth) && !month.isAfter(maxMonth);
     }
 
     private Map<String, Object> toTransactionPayload(TransactionEntry entry) {

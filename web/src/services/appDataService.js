@@ -1,20 +1,6 @@
 import api from './api';
 import authService from './authService';
 
-export const DEFAULT_EXPENSE_CATEGORIES = [
-  { id: 'food', label: 'Food', icon: '🍔', color: '#EF4444' },
-  { id: 'transport', label: 'Transport', icon: '🚗', color: '#3B82F6' },
-  { id: 'shopping', label: 'Shopping', icon: '🛍️', color: '#EC4899' },
-  { id: 'bills', label: 'Bills', icon: '💡', color: '#F59E0B' },
-  { id: 'entertainment', label: 'Entertainment', icon: '🎬', color: '#8B5CF6' },
-  { id: 'health', label: 'Health', icon: '💊', color: '#EF4444' },
-  { id: 'education', label: 'Education', icon: '📚', color: '#3B82F6' },
-  { id: 'salary', label: 'Salary', icon: '💰', color: '#10B981' },
-  { id: 'housing', label: 'Housing', icon: '🏠', color: '#10B981' },
-  { id: 'subscriptions', label: 'Subscriptions', icon: '📱', color: '#3B82F6' },
-  { id: 'other', label: 'Other', icon: '📦', color: '#6B7280' }
-];
-
 const safeGet = async (path, fallback) => {
   try {
     const response = await api.get(path);
@@ -53,22 +39,32 @@ export const getAnalytics = async () => {
   return safeGet('/analytics', {
     summary: null,
     spendingByCategory: [],
-    monthlyTrend: [],
+    monthlyBreakdown: [],
     categoryBreakdown: []
   });
 };
 
-export const getBudgets = async () => {
-  return safeGet('/budgets', {
+export const getBudgets = async (month) => {
+  const query = month ? `?month=${encodeURIComponent(month)}` : '';
+
+  return safeGet(`/budgets${query}`, {
     summary: null,
     categoryBudgets: [],
     uncategorized: []
   });
 };
 
+export const getBudgetPlans = async () => {
+  return safeGet('/budgets/plans', []);
+};
+
+export const upsertBudgetPlan = async (payload) => {
+  const response = await api.post('/budgets/plans', payload);
+  return response.data;
+};
+
 export const getCategories = async () => {
-  const categories = await safeGet('/categories', []);
-  return categories.length > 0 ? categories : DEFAULT_EXPENSE_CATEGORIES;
+  return safeGet('/categories', []);
 };
 
 export const createTransaction = async (payload) => {

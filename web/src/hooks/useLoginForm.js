@@ -27,7 +27,11 @@ const useLoginForm = (navigate) => {
       localStorage.setItem('accessToken', response.token);
       navigate('/dashboard');
     } catch (loginError) {
-      setError('Google sign-in failed. Please try again.');
+      if (loginError.response?.status === 503) {
+        setError('Google sign-in is unavailable right now. Please contact the administrator.');
+      } else {
+        setError('Google sign-in failed. Please try again.');
+      }
       console.error('Google login error:', loginError);
     } finally {
       setLoading(false);

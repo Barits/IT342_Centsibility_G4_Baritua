@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getTransactions } from '../services/appDataService';
 
 const TRANSACTIONS_CACHE_KEY = 'centsibility.transactions.list';
@@ -19,6 +20,7 @@ const readCachedTransactions = () => {
 };
 
 const useTransactionsData = () => {
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [transactions, setTransactions] = useState(() => readCachedTransactions());
@@ -27,27 +29,38 @@ const useTransactionsData = () => {
     let isMounted = true;
 
     const loadTransactions = async () => {
-      const data = await getTransactions();
-      if (!isMounted) {
-        return;
-      }
-
-      const safeTransactions = Array.isArray(data) ? data : [];
-      setTransactions(safeTransactions);
-
       try {
+        const data = await getTransactions();
+        if (!isMounted) {
+          return;
+        }
+
+        const safeTransactions = Array.isArray(data) ? data : [];
+        setTransactions(safeTransactions);
+
         window.localStorage.setItem(TRANSACTIONS_CACHE_KEY, JSON.stringify(safeTransactions));
       } catch (cacheError) {
-        // Ignore write failures and continue with fresh in-memory data.
+        if (!isMounted) {
+          return;
+        }
+
+        // Ignore backend and storage failures so the page can keep rendering.
       }
     };
 
-    loadTransactions();
+    void loadTransactions();
+
+    const handleTransactionsUpdated = () => {
+      void loadTransactions();
+    };
+
+    window.addEventListener('transactions:updated', handleTransactionsUpdated);
 
     return () => {
       isMounted = false;
+      window.removeEventListener('transactions:updated', handleTransactionsUpdated);
     };
-  }, []);
+  }, [location.state?.refreshTs]);
 
   const expenseTransactions = useMemo(() => (
     transactions.filter((transaction) => {

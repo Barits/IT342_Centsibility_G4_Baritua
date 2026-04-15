@@ -36,6 +36,48 @@ export const writeCachedBudgets = (payload) => {
   }
 };
 
+export const toMonthValue = (dateInput) => {
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+  if (Number.isNaN(date.getTime())) {
+    const fallback = new Date();
+    return `${fallback.getFullYear()}-${String(fallback.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+};
+
+export const formatMonthLabelFromValue = (monthValue) => {
+  const [yearText, monthText] = String(monthValue || '').split('-');
+  const year = Number(yearText);
+  const month = Number(monthText);
+
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
+    return 'Invalid month';
+  }
+
+  const date = new Date(year, month - 1, 1);
+  return date.toLocaleString('en-PH', { month: 'long', year: 'numeric' });
+};
+
+export const getBudgetMonthOptions = () => {
+  const baseDate = new Date();
+
+  return Array.from({ length: 3 }, (_, index) => {
+    const optionDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + index, 1);
+    const value = toMonthValue(optionDate);
+
+    return {
+      value,
+      label: formatMonthLabelFromValue(value)
+    };
+  });
+};
+
+export const isMonthWithinAllowedRange = (monthValue) => {
+  const allowedValues = getBudgetMonthOptions().map((item) => item.value);
+  return allowedValues.includes(monthValue);
+};
+
 export const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) {
     return '—';

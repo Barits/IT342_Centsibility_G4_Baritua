@@ -6,7 +6,11 @@ import '../css/AddTransaction.css';
 const AddTransaction = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const form = useAddTransactionForm(location.search, () => navigate('/transactions'));
+  const form = useAddTransactionForm(location.search, () => navigate('/transactions', {
+    state: {
+      refreshTs: Date.now()
+    }
+  }));
 
   return <AddTransactionExpenseScreen form={form} onBack={() => navigate(-1)} />;
 };

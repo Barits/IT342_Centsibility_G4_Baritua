@@ -219,14 +219,20 @@ public class UserService {
     }
 
     private GoogleTokenPayload verifyGoogleToken(String googleIdToken) {
+        if (googleIdToken == null || googleIdToken.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Google token is required");
+        }
+
         if (googleClientId == null || googleClientId.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Google client ID is not configured");
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "Google sign-in is not configured on the backend");
         }
 
         try {
             String tokenInfoUrl = "https://oauth2.googleapis.com/tokeninfo?id_token={token}";
             ResponseEntity<Map> response = restTemplate.getForEntity(tokenInfoUrl, Map.class, googleIdToken);
-            Map<String, Object> body = response.getBody();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> body = response.getBody() == null ? null : (Map<String, Object>) response.getBody();
 
             if (body == null) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Google token");
@@ -251,6 +257,8 @@ public class UserService {
             }
 
             return new GoogleTokenPayload(email.trim(), normalizeGoogleName(givenName), normalizeGoogleName(familyName));
+        } catch (ResponseStatusException ex) {
+            throw ex;
         } catch (RestClientException ex) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unable to verify Google token");
         }
