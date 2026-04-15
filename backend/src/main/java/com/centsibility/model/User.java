@@ -3,6 +3,7 @@ package com.centsibility.model;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +27,9 @@ public class User {
     
     @Column(nullable = false)
     private String password; // Will store BCrypt hash
+
+    @Column(name = "monthly_budget", precision = 14, scale = 2)
+    private BigDecimal monthlyBudget = BigDecimal.ZERO;
     
     @Column(nullable = false)
     private boolean enabled = true; // Email verification (set to true for Phase 1)
@@ -44,6 +48,67 @@ public class User {
     
     // Default constructor
     public User() {
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String firstName;
+        private String lastName;
+        private String email;
+        private String password;
+        private BigDecimal monthlyBudget = BigDecimal.ZERO;
+        private boolean enabled = true;
+        private Set<Role> roles = new HashSet<>();
+
+        public Builder firstName(String firstName) {
+            this.firstName = firstName;
+            return this;
+        }
+
+        public Builder lastName(String lastName) {
+            this.lastName = lastName;
+            return this;
+        }
+
+        public Builder email(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public Builder password(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public Builder monthlyBudget(BigDecimal monthlyBudget) {
+            this.monthlyBudget = monthlyBudget;
+            return this;
+        }
+
+        public Builder enabled(boolean enabled) {
+            this.enabled = enabled;
+            return this;
+        }
+
+        public Builder roles(Set<Role> roles) {
+            this.roles = roles;
+            return this;
+        }
+
+        public User build() {
+            User user = new User();
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+            user.setEmail(email);
+            user.setPassword(password);
+            user.setMonthlyBudget(monthlyBudget);
+            user.setEnabled(enabled);
+            user.setRoles(roles);
+            return user;
+        }
     }
     
     // Constructor with fields
@@ -93,6 +158,14 @@ public class User {
     
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public BigDecimal getMonthlyBudget() {
+        return monthlyBudget;
+    }
+
+    public void setMonthlyBudget(BigDecimal monthlyBudget) {
+        this.monthlyBudget = monthlyBudget;
     }
     
     public boolean isEnabled() {

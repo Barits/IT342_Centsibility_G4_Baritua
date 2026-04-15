@@ -1,0 +1,54 @@
+.quick-actions {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.quick-action-btn {
+  flex: 1;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: none;
+  font-size: 15px;
+  box-shadow: none !important;
+}
+
+.income-btn {
+  background-color: #10B981 !important;
+  color: white !important;
+}
+
+.income-btn:hover {
+  background-color: #059669 !important;
+}
+
+.expense-btn {
+  background-color: #EF4444 !important;
+  color: white !important;
+}
+
+.expense-btn:hover {
+  background-color: #DC2626 !important;
+}
+
+.transfer-btn {
+  background-color: #3B4A60 !important;
+  color: white !important;
+}
+
+.transfer-btn:hover {
+  background-color: #2C3A4E !important;
+}
+
+@media (max-width: 768px) {
+  .quick-actions {
+    flex-direction: column;
+  }
+}
+
+@media (min-width: 1024px) {
+  .quick-actions {
+    margin: 28px 0;
+  }
+}

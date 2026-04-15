@@ -1,0 +1,85 @@
+.category-selector {
+  margin: 24px 0;
+}
+
+.category-selector-label {
+  color: #111827;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 8px;
+  border-radius: 12px;
+  border: 2px solid #E5E7EB;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.category-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.category-item.selected {
+  border-width: 2px;
+}
+
+.category-color-red .category-icon { background-color: rgba(239, 68, 68, 0.2); }
+.category-color-blue .category-icon { background-color: rgba(59, 130, 246, 0.2); }
+.category-color-pink .category-icon { background-color: rgba(236, 72, 153, 0.2); }
+.category-color-amber .category-icon { background-color: rgba(245, 158, 11, 0.2); }
+.category-color-violet .category-icon { background-color: rgba(139, 92, 246, 0.2); }
+.category-color-green .category-icon { background-color: rgba(16, 185, 129, 0.2); }
+.category-color-gray .category-icon,
+.category-color-default .category-icon { background-color: rgba(107, 114, 128, 0.2); }
+
+.category-item.category-color-red.selected { border-color: #ef4444; background-color: rgba(239, 68, 68, 0.1); }
+.category-item.category-color-blue.selected { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
+.category-item.category-color-pink.selected { border-color: #ec4899; background-color: rgba(236, 72, 153, 0.1); }
+.category-item.category-color-amber.selected { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
+.category-item.category-color-violet.selected { border-color: #8b5cf6; background-color: rgba(139, 92, 246, 0.1); }
+.category-item.category-color-green.selected { border-color: #10b981; background-color: rgba(16, 185, 129, 0.1); }
+.category-item.category-color-gray.selected,
+.category-item.category-color-default.selected { border-color: #6b7280; background-color: rgba(107, 114, 128, 0.1); }
+
+.category-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.category-label {
+  color: #374151;
+  font-weight: 500;
+  font-size: 12px;
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .category-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+  
+  .category-item {
+    padding: 20px 12px;
+  }
+}

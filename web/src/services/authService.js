@@ -11,6 +11,16 @@ const authService = {
     return response.data;
   },
   
+  googleLogin: async (googleToken) => {
+    const response = await api.post('/auth/google/login', { token: googleToken });
+    return response.data;
+  },
+  
+  googleRegister: async (googleToken) => {
+    const response = await api.post('/auth/google/register', { token: googleToken });
+    return response.data;
+  },
+  
   logout: () => {
     localStorage.removeItem('user');
     localStorage.removeItem('accessToken');

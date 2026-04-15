@@ -1,0 +1,49 @@
+.today-spending-card {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 1px solid #F3F4F6;
+}
+
+.today-spending-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.today-spending-title {
+  color: #6B7280;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.today-spending-amount {
+  color: #111827;
+  font-weight: 700;
+}
+
+.today-spending-progress {
+  height: 8px;
+  border-radius: 4px;
+  background-color: #F3F4F6;
+  margin-bottom: 8px;
+}
+
+.today-spending-progress .MuiLinearProgress-bar {
+  background-color: #10B981;
+  border-radius: 4px;
+}
+
+.today-spending-caption {
+  color: #6B7280;
+  font-size: 12px;
+}
+
+@media (min-width: 1024px) {
+  .today-spending-card {
+    padding: 24px;
+    margin: 28px 0;
+  }
+}
